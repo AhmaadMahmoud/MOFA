@@ -1,0 +1,149 @@
+/*
+ * MOFA dashboard theme: the MOFA design system on top of Filament.
+ * Colors come from the panel provider (primary = brown, gray = warm brown
+ * scale); this file adds the fonts, the surfaces and the brand's shapes.
+ */
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@import '@fontsource/jost/latin-400.css';
+@import '@fontsource/jost/latin-500.css';
+@import '@fontsource/jost/latin-600.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
+@import '@fontsource/cormorant-garamond/latin-700.css';
+@import '@fontsource/tajawal/arabic-400.css';
+@import '@fontsource/tajawal/arabic-500.css';
+@import '@fontsource/tajawal/arabic-700.css';
+@import '@fontsource/amiri/arabic-700.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+:root {
+    --mofa-cream: #e0c3a4;
+    --mofa-brown: #4b2c16;
+    --mofa-terracotta: #b2563d;
+    --mofa-mauve: #ac7884;
+    --mofa-olive: #786b49;
+    --mofa-paper: #f6ece1;
+    --mofa-surface: #fffaf4;
+    --mofa-ink-muted: #6a4630;
+    --mofa-hairline: rgb(75 44 22 / 0.16);
+}
+
+/* ---------- Page ---------- */
+.fi-body {
+    background-color: var(--mofa-paper);
+    color: var(--mofa-brown);
+}
+
+/* ---------- Sidebar: cream, like the brand's ground ---------- */
+.fi-sidebar,
+.fi-sidebar-header {
+    background-color: var(--mofa-cream);
+}
+.fi-sidebar {
+    border-inline-end: 1px solid var(--mofa-hairline);
+}
+.fi-sidebar-header {
+    box-shadow: none;
+    border-bottom: 1px solid var(--mofa-hairline);
+}
+.fi-sidebar-group-label {
+    color: var(--mofa-ink-muted);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+}
+:lang(ar) .fi-sidebar-group-label {
+    letter-spacing: 0;
+    font-size: 0.8125rem;
+}
+.fi-sidebar-item-btn {
+    border-radius: 999px;
+}
+.fi-sidebar-item-btn:hover {
+    background-color: rgb(246 236 225 / 0.6);
+}
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background-color: var(--mofa-brown);
+}
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-icon {
+    color: var(--mofa-paper);
+}
+.fi-sidebar-item-label,
+.fi-sidebar-item-btn .fi-icon {
+    color: var(--mofa-brown);
+}
+
+/* ---------- Top bar ---------- */
+.fi-topbar > nav,
+.fi-topbar {
+    background-color: var(--mofa-paper);
+    box-shadow: none;
+}
+.fi-topbar > nav {
+    border-bottom: 1px solid var(--mofa-hairline);
+}
+
+/* ---------- Headings in the brand serif ---------- */
+.fi-header-heading,
+.fi-simple-header-heading,
+.fi-section-header-heading,
+.fi-modal-heading,
+.fi-wi-stats-overview-stat-value {
+    font-family: var(--serif-font-family), Georgia, serif;
+    font-weight: 700;
+    color: var(--mofa-brown);
+    letter-spacing: 0;
+}
+.fi-header-heading {
+    font-size: 2.25rem;
+    line-height: 1.1;
+}
+.fi-section-header-heading {
+    font-size: 1.25rem;
+}
+
+/* ---------- Surfaces: warm white cards with a hairline, no heavy shadows ---------- */
+.fi-section:not(.fi-section-not-contained),
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat,
+.fi-wi-widget > .fi-section,
+.fi-simple-main,
+.fi-fo-repeater-item,
+.fi-modal-window {
+    background-color: var(--mofa-surface);
+    border-radius: 12px;
+    box-shadow: none;
+    --tw-ring-color: var(--mofa-hairline);
+}
+
+/* ---------- Controls ---------- */
+.fi-btn {
+    border-radius: 999px;
+}
+.fi-input-wrp,
+.fi-select-input,
+.fi-fo-file-upload .filepond--panel-root {
+    border-radius: 8px;
+}
+.fi-badge {
+    border-radius: 999px;
+}
+.fi-tabs {
+    border-radius: 999px;
+}
+
+/* ---------- Sign-in page: cream ground with the brand's corner waves ---------- */
+.fi-simple-layout {
+    background-color: var(--mofa-cream);
+    background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill='%23ac7884' d='M0 0H22C16 6 10 4 6 12C3 18 4 24 0 28Z'/%3E%3Cpath fill='%23b2563d' d='M0 30C6 24 6 16 12 12C18 8 22 6 26 0H34C28 8 22 10 16 16C10 22 8 32 0 38Z'/%3E%3Cpath fill='%23786b49' d='M100 0V24C94 22 90 16 86 10C83 5 80 2 76 0Z'/%3E%3Cpath fill='%23b2563d' d='M0 70C8 74 12 82 18 88C22 92 26 96 30 100H0Z'/%3E%3Cpath fill='%23ac7884' d='M0 86C6 90 10 96 14 100H0Z'/%3E%3Cpath fill='%23786b49' d='M100 100V80C94 82 90 88 86 94C84 97 82 99 80 100Z'/%3E%3C/svg%3E");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+}
+.fi-simple-main {
+    background-color: var(--mofa-paper);
+    border: 1px solid var(--mofa-hairline);
+}

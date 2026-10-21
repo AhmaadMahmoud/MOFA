@@ -1,0 +1,186 @@
+/*
+ * MOFA — Made Of Faten
+ * Tailwind theme built from the MOFA design system (tokens.json).
+ *
+ * Fonts are self-hosted via @fontsource. Every family pairs an English face
+ * with an Arabic one: the browser takes Latin glyphs from the first and Arabic
+ * glyphs from the second, so mixed text ("طلب Sunrise Roast") renders right.
+ * The Arabic faces are a proposal pending Faten's approval.
+ */
+@import 'tailwindcss';
+
+/* English */
+@import '@fontsource/jost/latin-400.css';
+@import '@fontsource/jost/latin-500.css';
+@import '@fontsource/jost/latin-600.css';
+@import '@fontsource/cormorant-garamond/latin-600.css';
+@import '@fontsource/cormorant-garamond/latin-700.css';
+@import '@fontsource/bagel-fat-one/latin-400.css';
+@import '@fontsource/caveat/latin-600.css';
+@import '@fontsource/caveat/latin-700.css';
+
+/* Arabic counterparts */
+@import '@fontsource/tajawal/arabic-400.css';
+@import '@fontsource/tajawal/arabic-500.css';
+@import '@fontsource/tajawal/arabic-700.css';
+@import '@fontsource/amiri/arabic-700.css';
+@import '@fontsource/lalezar/arabic-400.css';
+@import '@fontsource/aref-ruqaa/arabic-700.css';
+
+/* The public site only uses its own views; never scan vendor (Filament alone is thousands of classes). */
+@source not '../../vendor';
+@source not '../../node_modules';
+@source not '../../resources/css/filament';
+@source not '../../app/Filament';
+@source not '../../storage';
+
+@theme {
+    /* ---------- Color: the five brand colors ---------- */
+    --color-cream: #e0c3a4;       /* Warm Cream — ground, ~55% */
+    --color-brown: #4b2c16;       /* Deep Chocolate Brown — text, logo, primary buttons, ~25% */
+    --color-terracotta: #b2563d;  /* Burnt Terracotta — accents, waves, accent buttons, ~10% */
+    --color-mauve: #ac7884;       /* Dusty Mauve — brush strokes, waves; decorative only, ~5% */
+    --color-olive: #786b49;       /* Muted Olive Green — waves, small accents; decorative only, ~5% */
+
+    /* ---------- Color: derived (not brand colors) ---------- */
+    --color-paper: #f6ece1;          /* cards, long reading areas, the bottom bar */
+    --color-ink-muted: #6a4630;      /* secondary text: 4.9:1 on cream, 7.1:1 on paper */
+    --color-on-terracotta: #fff8f1;  /* text on terracotta fills: 4.65:1 */
+    --color-hairline: rgb(75 44 22 / 0.28);
+
+    /* ---------- Type ---------- */
+    --font-sans: 'Jost', 'Tajawal', 'Futura', 'Century Gothic', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: 'Cormorant Garamond', 'Amiri', Georgia, ui-serif, serif;
+    --font-retro: 'Bagel Fat One', 'Lalezar', 'Cooper Black', Georgia, serif;
+    --font-script: 'Caveat', 'Aref Ruqaa', 'Bradley Hand', cursive;
+
+    --text-eyebrow: 0.8125rem;
+    --text-eyebrow--line-height: 1.4;
+    --text-eyebrow--letter-spacing: 0.28em;
+    --text-eyebrow--font-weight: 500;
+
+    --text-label: 0.9375rem;
+    --text-label--line-height: 1.2;
+    --text-label--letter-spacing: 0.08em;
+    --text-label--font-weight: 500;
+
+    /* ---------- Radius ---------- */
+    --radius-sm: 4px;
+    --radius-md: 12px;
+    --radius-lg: 28px;
+    --radius-pill: 999px;
+
+    /* ---------- Shadow (cards on hover only; the brand is flat) ---------- */
+    --shadow-soft: 0 12px 32px rgb(75 44 22 / 0.14);
+
+    /* ---------- Layout ---------- */
+    --container-site: 76rem;
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-cream font-sans text-brown antialiased;
+    }
+
+    /* Arabic reads better a touch larger and looser than Latin at the same size. */
+    html[lang='ar'] body {
+        line-height: 1.75;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-brown);
+        outline-offset: 3px;
+    }
+
+    [x-cloak] {
+        display: none !important;
+    }
+}
+
+@layer components {
+    /* Buttons — pill, uppercase label type, min 48px tall for thumbs. */
+    .btn {
+        @apply inline-flex min-h-12 items-center justify-center gap-2 rounded-pill border-[1.5px] border-transparent px-6 text-label uppercase no-underline transition duration-150 ease-out select-none;
+    }
+    .btn:hover {
+        transform: translateY(-1px);
+    }
+    .btn:disabled,
+    .btn[aria-disabled='true'] {
+        @apply cursor-not-allowed opacity-45;
+        transform: none;
+    }
+    html[lang='ar'] .btn {
+        @apply normal-case tracking-normal text-base font-medium;
+    }
+    .btn-primary {
+        @apply bg-brown text-paper;
+    }
+    .btn-accent {
+        @apply bg-terracotta text-on-terracotta;
+    }
+    .btn-ghost {
+        @apply border-brown bg-transparent text-brown;
+    }
+
+    /* Tag — the boxed "• LABEL •" from the logo lockup. */
+    .tag {
+        @apply inline-flex items-center gap-2 rounded-sm border border-brown px-3 py-1.5 text-xs font-medium uppercase tracking-[0.24em] text-brown;
+    }
+    .tag::before,
+    .tag::after {
+        content: '•';
+        letter-spacing: 0;
+    }
+    html[lang='ar'] .tag {
+        @apply text-sm normal-case tracking-normal;
+    }
+
+    /* Eyebrow — wide-tracked uppercase line. */
+    .eyebrow {
+        @apply text-eyebrow uppercase;
+    }
+    html[lang='ar'] .eyebrow {
+        @apply text-sm normal-case tracking-normal;
+    }
+
+    /* Script aside sitting on a mauve brush stroke. */
+    .brush {
+        @apply relative isolate inline-block px-2 font-script font-bold;
+    }
+    .brush::before {
+        content: '';
+        position: absolute;
+        inset-inline: -0.375rem -0.625rem;
+        top: 42%;
+        bottom: 4%;
+        z-index: -1;
+        background: var(--color-mauve);
+        opacity: 0.55;
+        border-radius: 40% 60% 55% 45% / 60% 40% 60% 40%;
+        transform: skewX(-12deg);
+    }
+
+    /* Ornament — hairline · dot · hairline. */
+    .ornament {
+        @apply flex w-full max-w-[22.5rem] items-center gap-3;
+    }
+    .ornament::before,
+    .ornament::after {
+        content: '';
+        @apply h-px flex-1 bg-hairline;
+    }
+    .ornament > i {
+        @apply size-1.5 rounded-full bg-brown/55;
+    }
+
+    /* Everything that points along the reading direction flips in RTL. */
+    [dir='rtl'] .flip-rtl {
+        transform: scaleX(-1);
+    }
+}
