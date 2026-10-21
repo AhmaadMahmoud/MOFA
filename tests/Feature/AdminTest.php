@@ -109,4 +109,31 @@ class AdminTest extends TestCase
         Livewire::test(ListItems::class)->assertCanSeeTableRecords(Item::all());
         Livewire::test(ManageCategories::class)->assertSuccessful();
     }
+
+    public function test_home_lists_items_that_need_attention(): void
+    {
+        Item::factory()->create(['name_en' => 'Plain Bagel', 'price' => 0]);
+        Item::factory()->create([
+            'name_en' => 'Complete Box', 'price' => 12000, 'images' => ['items/box.jpg'],
+            'protein_g' => 10, 'carbs_g' => 20, 'fat_g' => 5, 'description_en' => 'x', 'description_ar' => 'س',
+        ]);
+
+        Livewire::test(\App\Filament\Widgets\ItemsNeedingAttention::class)
+            ->assertCanSeeTableRecords(Item::where('name_en', 'Plain Bagel')->get())
+            ->assertCanNotSeeTableRecords(Item::where('name_en', 'Complete Box')->get());
+    }
+
+    public function test_arabic_items_table_keeps_numbers_and_units_in_order(): void
+    {
+        $category = Category::factory()->create(['name_en' => 'Sandwiches', 'name_ar' => 'ساندويتشات']);
+        Item::factory()->for($category)->create(['price' => 9500, 'protein_g' => 40, 'carbs_g' => 38, 'fat_g' => 27]);
+
+        $this->get('/admin/locale/ar');
+        $this->get('/admin/items')
+            ->assertOk()
+            ->assertSee('555 سعر حراري')
+            ->assertSee('95 ج.م')
+            ->assertSee('ساندويتشات')
+            ->assertDontSee('555 kcal');
+    }
 }

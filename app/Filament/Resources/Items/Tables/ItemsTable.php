@@ -36,15 +36,17 @@ class ItemsTable
                     ->description(fn (Item $record) => $record->name_ar),
                 TextColumn::make('category.name_en')
                     ->label(__('Category'))
+                    ->formatStateUsing(fn ($state, Item $record) => $record->category?->localized('name'))
                     ->badge()
                     ->color('gray'),
                 TextColumn::make('price')
                     ->label(__('Price'))
-                    ->formatStateUsing(fn (int $state) => $state > 0 ? Money::format($state, 'en') : '—')
+                    ->formatStateUsing(fn (int $state) => $state > 0 ? Money::format($state) : '—')
                     ->sortable(),
                 TextColumn::make('calories')
                     ->label(__('Calories'))
-                    ->suffix(' kcal')
+                    // Number and unit as one translated string, so Arabic reads "555 سعر حراري", never "kcal 555".
+                    ->formatStateUsing(fn (int $state) => __(':n kcal', ['n' => $state]))
                     ->placeholder('—')
                     ->toggleable(),
                 IconColumn::make('is_featured')

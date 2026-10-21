@@ -36,20 +36,46 @@
     color: var(--mofa-brown);
 }
 
-/* ---------- Sidebar: cream, like the brand's ground ---------- */
-.fi-sidebar,
-.fi-sidebar-header {
-    background-color: var(--mofa-cream);
-}
+/* ---------- Sidebar: Deep Chocolate Brown, a rounded card ---------- */
+/* Mobile drawer: brown, rounded on its inner edge. */
 .fi-sidebar {
-    border-inline-end: 1px solid var(--mofa-hairline);
+    background-color: var(--mofa-brown);
+    border-inline-end: 0;
+    border-start-end-radius: 28px;
+    border-end-end-radius: 28px;
+    overflow: hidden;
 }
 .fi-sidebar-header {
+    background-color: transparent;
     box-shadow: none;
-    border-bottom: 1px solid var(--mofa-hairline);
+    border-bottom: 1px solid rgb(246 236 225 / 0.12);
 }
+
+/* Desktop: a floating rounded card beside the page. */
+@media (min-width: 64rem) {
+    .fi-main-sidebar {
+        background: transparent;
+        border-radius: 0;
+        overflow: visible;
+        padding-block: 12px 16px;
+        padding-inline-start: 16px;
+    }
+    .fi-main-sidebar .fi-sidebar-nav {
+        height: 100%;
+        border-radius: 28px;
+        background-color: var(--mofa-brown);
+        box-shadow: 0 18px 40px -18px rgb(75 44 22 / 0.45);
+    }
+}
+
+/* The logo's ink is brown: when it sits in the sidebar (the mobile drawer), draw it in paper. */
+.fi-sidebar-header .fi-logo,
+.fi-sidebar-header img {
+    filter: brightness(0) invert(1) sepia(0.25);
+}
+
 .fi-sidebar-group-label {
-    color: var(--mofa-ink-muted);
+    color: rgb(246 236 225 / 0.6);
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-size: 0.6875rem;
@@ -58,22 +84,55 @@
     letter-spacing: 0;
     font-size: 0.8125rem;
 }
+.fi-sidebar .fi-icon-btn,
+.fi-sidebar-group-btn .fi-icon,
+.fi-sidebar-item-label,
+.fi-sidebar-item-btn .fi-icon {
+    color: var(--mofa-paper);
+}
+
+/* Items: soft pills that drift a little toward the reading direction on hover. */
 .fi-sidebar-item-btn {
     border-radius: 999px;
+    transition: background-color 200ms ease, transform 200ms ease;
 }
-.fi-sidebar-item-btn:hover {
-    background-color: rgb(246 236 225 / 0.6);
+.fi-sidebar-item-btn .fi-icon,
+.fi-sidebar-item-label {
+    transition: color 200ms ease;
+}
+.fi-sidebar-item-btn:hover,
+.fi-sidebar-item-btn:focus-visible {
+    background-color: rgb(246 236 225 / 0.1);
+    transform: translateX(3px);
+}
+:dir(rtl) .fi-sidebar-item-btn:hover,
+:dir(rtl) .fi-sidebar-item-btn:focus-visible {
+    transform: translateX(-3px);
 }
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
-    background-color: var(--mofa-brown);
+    background-color: var(--mofa-cream);
+    box-shadow: 0 6px 16px -8px rgb(0 0 0 / 0.45);
+    transform: none;
 }
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-sidebar-item-label,
 .fi-sidebar-item.fi-active > .fi-sidebar-item-btn .fi-icon {
-    color: var(--mofa-paper);
-}
-.fi-sidebar-item-label,
-.fi-sidebar-item-btn .fi-icon {
     color: var(--mofa-brown);
+}
+.fi-sidebar-group-btn .fi-icon-btn {
+    transition: transform 200ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fi-sidebar-item-btn,
+    .fi-sidebar-item-btn .fi-icon,
+    .fi-sidebar-item-label,
+    .fi-sidebar-group-btn .fi-icon-btn {
+        transition: none;
+    }
+    .fi-sidebar-item-btn:hover,
+    .fi-sidebar-item-btn:focus-visible {
+        transform: none;
+    }
 }
 
 /* ---------- Top bar ---------- */
@@ -91,7 +150,7 @@
 .fi-simple-header-heading,
 .fi-section-header-heading,
 .fi-modal-heading,
-.fi-wi-stats-overview-stat-value {
+.fi-ta-header-heading {
     font-family: var(--serif-font-family), Georgia, serif;
     font-weight: 700;
     color: var(--mofa-brown);
@@ -101,8 +160,17 @@
     font-size: 2.25rem;
     line-height: 1.1;
 }
-.fi-section-header-heading {
+.fi-section-header-heading,
+.fi-ta-header-heading {
     font-size: 1.25rem;
+}
+
+/* Numbers stay in the sans face: Cormorant's old-style 1 reads like an I. */
+.fi-wi-stats-overview-stat-value {
+    font-family: var(--font-family), sans-serif;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--mofa-brown);
 }
 
 /* ---------- Surfaces: warm white cards with a hairline, no heavy shadows ---------- */
@@ -141,7 +209,6 @@
     background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3Cpath fill='%23ac7884' d='M0 0H22C16 6 10 4 6 12C3 18 4 24 0 28Z'/%3E%3Cpath fill='%23b2563d' d='M0 30C6 24 6 16 12 12C18 8 22 6 26 0H34C28 8 22 10 16 16C10 22 8 32 0 38Z'/%3E%3Cpath fill='%23786b49' d='M100 0V24C94 22 90 16 86 10C83 5 80 2 76 0Z'/%3E%3Cpath fill='%23b2563d' d='M0 70C8 74 12 82 18 88C22 92 26 96 30 100H0Z'/%3E%3Cpath fill='%23ac7884' d='M0 86C6 90 10 96 14 100H0Z'/%3E%3Cpath fill='%23786b49' d='M100 100V80C94 82 90 88 86 94C84 97 82 99 80 100Z'/%3E%3C/svg%3E");
     background-size: 100% 100%;
-    background-repeat: no-repeat;
 }
 .fi-simple-main {
     background-color: var(--mofa-paper);
