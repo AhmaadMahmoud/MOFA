@@ -16,8 +16,6 @@
     <div class="mx-auto grid max-w-(--container-site) items-center gap-8 px-5 pt-2 pb-12 lg:grid-cols-[1.15fr_1fr] lg:gap-12 lg:px-10 lg:pt-10 lg:pb-24">
         {{-- Copy --}}
         <div class="flex flex-col items-start gap-4 lg:gap-6">
-            <x-tag>{{ __('Sourdough & Bagels') }}</x-tag>
-
             <h1 id="hero-title" class="m-0 font-retro text-[3rem] leading-[0.95] font-normal tracking-[-0.01em] uppercase text-balance sm:text-7xl lg:text-[5.75rem] rtl:leading-[1.2] rtl:normal-case">
                 {{ __('Your kind of morning.') }}
             </h1>

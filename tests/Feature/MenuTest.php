@@ -61,8 +61,10 @@ class MenuTest extends TestCase
 
         $this->get('/en/menu/sunrise-roast')
             ->assertOk()
-            ->assertSee('Serving size: ~228 g')
-            ->assertSee('555 kcal')
+            ->assertSee('Per serving of about 228 g')
+            ->assertSeeInOrder(['555', 'calories'])
+            // Where the calories come from: 160 + 152 + 243 kcal.
+            ->assertSeeInOrder(['Protein', '29% of calories', 'Carbohydrates', '27% of calories', 'Fat', '44% of calories'])
             ->assertSeeInOrder(['Sourdough Bread', '60 g', 'Egg', '1'])
             ->assertDontSee('60.00');
     }

@@ -11,6 +11,7 @@ use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Navigation\MenuItem;
+use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -32,6 +33,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // "Profile" in the account menu: name, email and password (asks for the current password first).
+            ->profile(\App\Filament\Pages\Auth\EditProfile::class, isSimple: false)
             ->brandName('MOFA')
             ->brandLogo(asset('images/brand/mofa-header-logo.png'))
             ->brandLogoHeight('3rem')
@@ -68,6 +71,13 @@ class AdminPanelProvider extends PanelProvider
                     return redirect()->back(fallback: filament()->getUrl());
                 })->name('locale');
             })
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('60s')
+            ->navigationGroups([
+                NavigationGroup::make(fn () => __('Orders')),
+                NavigationGroup::make(fn () => __('Menu')),
+                NavigationGroup::make(fn () => __('Delivery')),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')

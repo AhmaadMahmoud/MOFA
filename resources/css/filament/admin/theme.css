@@ -34,6 +34,8 @@
 .fi-body {
     background-color: var(--mofa-paper);
     color: var(--mofa-brown);
+    /* Cormorant's old-style figures turn "3" and "1" odd in headings like "Order MF-W3KAN". */
+    font-variant-numeric: lining-nums;
 }
 
 /* ---------- Sidebar: Deep Chocolate Brown, a rounded card ---------- */
@@ -213,4 +215,665 @@
 .fi-simple-main {
     background-color: var(--mofa-paper);
     border: 1px solid var(--mofa-hairline);
+}
+
+/* ---------- Orders: payment receipt ---------- */
+.mofa-receipt {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.mofa-receipt-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+.mofa-receipt-link img {
+    display: block;
+    max-width: 100%;
+    max-height: 26rem;
+    border-radius: 10px;
+    border: 1px solid var(--mofa-hairline);
+    background: #fff;
+    object-fit: contain;
+}
+.mofa-receipt-open {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    align-self: flex-start;
+}
+
+/* ---------- Prep list ---------- */
+.mofa-prep {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.mofa-prep-days {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+}
+.mofa-prep-date {
+    min-height: 2.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--mofa-hairline);
+    background: var(--mofa-surface);
+    padding: 0 0.75rem;
+    color: var(--mofa-brown);
+}
+.mofa-prep-note {
+    border-radius: 12px;
+    background: rgb(178 86 61 / 0.1);
+    padding: 0.75rem 1rem;
+    font-size: 0.9375rem;
+}
+.mofa-prep-note a {
+    font-weight: 600;
+    text-decoration: underline;
+    margin-inline-start: 0.25rem;
+}
+.mofa-prep-empty {
+    text-align: center;
+    padding: 1.5rem 0;
+    color: var(--mofa-ink-muted);
+}
+.mofa-prep-empty-title {
+    font-family: var(--serif-font-family), Georgia, serif;
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--mofa-brown);
+}
+.mofa-prep-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+}
+.mofa-prep-table th {
+    text-align: start;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--mofa-ink-muted);
+    padding: 0 0 0.5rem;
+    border-bottom: 1px solid var(--mofa-hairline);
+}
+.mofa-prep-table td {
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--mofa-hairline);
+}
+.mofa-prep-table .mofa-num {
+    text-align: end;
+    width: 7rem;
+    font-variant-numeric: tabular-nums lining-nums;
+}
+.mofa-strong {
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+.mofa-muted {
+    color: var(--mofa-ink-muted);
+}
+.mofa-prep-orders {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.mofa-prep-order {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.875rem 0;
+    border-bottom: 1px solid var(--mofa-hairline);
+}
+.mofa-prep-order:last-child {
+    border-bottom: 0;
+}
+.mofa-prep-order-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+}
+.mofa-prep-chip {
+    display: inline-block;
+    margin: 0.125rem 0;
+    margin-inline-end: 0.375rem;
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+    background: rgb(224 195 164 / 0.45);
+    font-size: 0.875rem;
+}
+.mofa-prep-notes {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+    border-inline-start: 3px solid var(--mofa-terracotta);
+    background: rgb(178 86 61 / 0.06);
+}
+
+/* Printing the prep list: just the content. */
+@media print {
+    .fi-sidebar,
+    .fi-main-sidebar,
+    .fi-topbar,
+    .fi-header-actions,
+    .fi-breadcrumbs,
+    .mofa-no-print {
+        display: none !important;
+    }
+    .fi-body,
+    .fi-section {
+        background: #fff !important;
+    }
+    .fi-main {
+        padding: 0 !important;
+        max-width: none !important;
+    }
+    .fi-section {
+        break-inside: avoid;
+    }
+}
+
+/* ---------- Profile ---------- */
+.mofa-profile-card {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.25rem;
+    padding: 1.5rem;
+    border-radius: 20px;
+    background: var(--mofa-brown);
+    color: var(--mofa-paper);
+}
+/* The brand's corner wave, quietly. */
+.mofa-profile-card::after {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-end: 0;
+    width: 7rem;
+    background: var(--mofa-terracotta);
+    opacity: 0.55;
+    clip-path: path('M144 0 V200 C96 180 70 140 58 92 C48 50 34 18 0 0 Z');
+    pointer-events: none;
+}
+:dir(rtl) .mofa-profile-card::after {
+    transform: scaleX(-1);
+}
+.mofa-profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 999px;
+    background: var(--mofa-cream);
+    color: var(--mofa-brown);
+    font-family: var(--serif-font-family), Georgia, serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.mofa-profile-who {
+    min-width: 0;
+    flex: 1;
+}
+.mofa-profile-name {
+    margin: 0;
+    font-family: var(--serif-font-family), Georgia, serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: 1.15;
+}
+.mofa-profile-email {
+    margin: 0.125rem 0 0;
+    color: rgb(246 236 225 / 0.75);
+    overflow-wrap: break-word;
+    text-align: start;
+}
+:dir(rtl) .mofa-profile-email {
+    text-align: end;
+}
+.mofa-profile-since {
+    position: relative;
+    z-index: 1;
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.8125rem;
+    color: rgb(246 236 225 / 0.7);
+}
+@media (min-width: 40rem) {
+    .mofa-profile-since {
+        flex-basis: auto;
+    }
+}
+
+/* Profile sections: icon in a soft cream circle beside the title. */
+.fi-section-header-icon {
+    color: var(--mofa-brown);
+}
+
+/* ---------- Sidebar: the terracotta waves from the profile card, in two opposite corners ---------- */
+/* Backgrounds, so they stay put while the menu scrolls and never cover a link.
+   LTR: top-left and bottom-right. RTL mirrors them: top-right and bottom-left. */
+@media (max-width: 63.99rem) {
+    .fi-sidebar {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 150' preserveAspectRatio='none'%3E%3Cpath fill='%23b2563d' fill-opacity='0.55' d='M0 150 C28 132 48 104 56 68 C64 32 84 12 116 0 H0 Z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 150' preserveAspectRatio='none'%3E%3Cpath fill='%23b2563d' fill-opacity='0.55' d='M140 0 C112 18 92 46 84 82 C76 118 56 138 24 150 H140 Z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat, no-repeat;
+        background-size: 6rem 6.5rem, 8.5rem 9rem;
+        background-position: left top, right bottom;
+    }
+    :dir(rtl) .fi-sidebar {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 150' preserveAspectRatio='none'%3E%3Cpath fill='%23b2563d' fill-opacity='0.55' d='M140 150 C112 132 92 104 84 68 C76 32 56 12 24 0 H140 Z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 150' preserveAspectRatio='none'%3E%3Cpath fill='%23b2563d' fill-opacity='0.55' d='M0 0 C28 18 48 46 56 82 C64 118 84 138 116 150 H0 Z'/%3E%3C/svg%3E");
+        background-position: right top, left bottom;
+    }
+}
+@media (min-width: 64rem) {
+    .fi-main-sidebar .fi-sidebar-nav {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 150' preserveAspectRatio='none'%3E%3Cpath fill='%23b2563d' fill-opacity='0.55' d='M0 150 C28 132 48 104 56 68 C64 32 84 12 116 0 H0 Z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 150' preserveAspectRatio='none'%3E%3Cpath fill='%23b2563d' fill-opacity='0.55' d='M140 0 C112 18 92 46 84 82 C76 118 56 138 24 150 H140 Z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat, no-repeat;
+        background-size: 6rem 6.5rem, 8.5rem 9rem;
+        background-position: left top, right bottom;
+    }
+    :dir(rtl) .fi-main-sidebar .fi-sidebar-nav {
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 150' preserveAspectRatio='none'%3E%3Cpath fill='%23b2563d' fill-opacity='0.55' d='M140 150 C112 132 92 104 84 68 C76 32 56 12 24 0 H140 Z'/%3E%3C/svg%3E"), url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 150' preserveAspectRatio='none'%3E%3Cpath fill='%23b2563d' fill-opacity='0.55' d='M0 0 C28 18 48 46 56 82 C64 118 84 138 116 150 H0 Z'/%3E%3C/svg%3E");
+        background-position: right top, left bottom;
+    }
+}
+
+/* ---------- Order page ---------- */
+.mofa-link {
+    color: var(--mofa-brown);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgb(75 44 22 / 0.35);
+}
+.mofa-link:hover {
+    text-decoration-color: currentColor;
+}
+.mofa-order-sub {
+    font-size: 0.875rem;
+    color: var(--mofa-ink-muted);
+}
+.mofa-ltr {
+    unicode-bidi: plaintext;
+}
+
+/* Summary: the progress line, then four facts. */
+.mofa-order-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: var(--mofa-surface);
+    box-shadow: inset 0 0 0 1px var(--mofa-hairline);
+}
+.mofa-order-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.mofa-order-steps li {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-top: 1.75rem;
+    padding-inline-end: 0.5rem;
+}
+/* The line between dots. */
+.mofa-order-steps li::before {
+    content: '';
+    position: absolute;
+    top: 0.6875rem;
+    inset-inline-start: 1.375rem;
+    inset-inline-end: 0;
+    height: 2px;
+    background: rgb(75 44 22 / 0.15);
+}
+.mofa-order-steps li:last-child::before {
+    display: none;
+}
+.mofa-order-steps li.is-done::before {
+    background: var(--mofa-brown);
+}
+.mofa-order-step-dot {
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: 999px;
+    border: 2px solid rgb(75 44 22 / 0.25);
+    background: var(--mofa-surface);
+    color: var(--mofa-paper);
+}
+.is-done .mofa-order-step-dot {
+    border-color: var(--mofa-brown);
+    background: var(--mofa-brown);
+}
+.is-current .mofa-order-step-dot {
+    border-color: var(--mofa-terracotta);
+    box-shadow: 0 0 0 4px rgb(178 86 61 / 0.18);
+}
+.is-current .mofa-order-step-dot::after {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--mofa-terracotta);
+}
+.mofa-order-step-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--mofa-ink-muted);
+}
+.is-done .mofa-order-step-label,
+.is-current .mofa-order-step-label {
+    color: var(--mofa-brown);
+    font-weight: 600;
+}
+.mofa-order-step-time {
+    font-size: 0.75rem;
+    color: var(--mofa-ink-muted);
+}
+.mofa-order-stopped {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--mofa-ink-muted);
+}
+.mofa-order-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--mofa-hairline);
+}
+@media (min-width: 48rem) {
+    .mofa-order-facts {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+.mofa-order-facts > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.mofa-order-facts dt {
+    font-size: 0.8125rem;
+    color: var(--mofa-ink-muted);
+}
+.mofa-order-facts dd {
+    margin: 0;
+    font-weight: 600;
+}
+.mofa-order-facts dd.mofa-order-sub {
+    font-weight: 400;
+}
+.mofa-order-total {
+    font-family: var(--serif-font-family), Georgia, serif;
+    font-size: 1.75rem;
+    line-height: 1;
+}
+@media (max-width: 40rem) {
+    /* Phones: the five steps become a compact column. */
+    .mofa-order-steps {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    .mofa-order-steps li {
+        padding-top: 0;
+        padding-inline-start: 2rem;
+    }
+    .mofa-order-steps li::before {
+        top: 1.375rem;
+        bottom: -0.75rem;
+        inset-inline-start: 0.625rem;
+        inset-inline-end: auto;
+        width: 2px;
+        height: auto;
+    }
+}
+
+/* Items: a light table with the totals underneath, aligned to the amounts. */
+.mofa-order-items table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.mofa-order-items th {
+    padding: 0 0 0.625rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    text-align: start;
+    color: var(--mofa-ink-muted);
+    border-bottom: 1px solid var(--mofa-hairline);
+}
+.mofa-order-items td {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--mofa-hairline);
+}
+.mofa-order-items .mofa-num {
+    width: 6.5rem;
+    text-align: end;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums lining-nums;
+}
+.mofa-order-item-name {
+    font-weight: 600;
+}
+.mofa-order-totals {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin: 0.875rem 0 0;
+    margin-inline-start: auto;
+    max-width: 18rem;
+}
+.mofa-order-totals > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.mofa-order-totals dt {
+    color: var(--mofa-ink-muted);
+}
+.mofa-order-totals dd {
+    margin: 0;
+}
+.mofa-order-totals .is-total {
+    margin-top: 0.25rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--mofa-hairline);
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+.mofa-order-totals .is-total dt {
+    color: var(--mofa-brown);
+}
+
+/* Label / value rows. */
+.mofa-order-list {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+}
+.mofa-order-list > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--mofa-hairline);
+}
+.mofa-order-list > div:last-child {
+    border-bottom: 0;
+}
+.mofa-order-list dt {
+    font-size: 0.875rem;
+    color: var(--mofa-ink-muted);
+    flex-shrink: 0;
+}
+.mofa-order-list dd {
+    margin: 0;
+    min-width: 0;
+    text-align: end;
+    font-weight: 500;
+    overflow-wrap: anywhere;
+}
+.mofa-order-rejected dd {
+    color: var(--mofa-terracotta);
+}
+.mofa-order-ref {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+.mofa-order-copy {
+    display: flex;
+    padding: 0.25rem;
+    border-radius: 6px;
+    color: var(--mofa-ink-muted);
+}
+.mofa-order-copy:hover {
+    color: var(--mofa-brown);
+    background: rgb(75 44 22 / 0.06);
+}
+
+/* Payment: details beside a receipt thumbnail. */
+.mofa-order-payment {
+    display: grid;
+    gap: 1.25rem;
+}
+@media (min-width: 48rem) {
+    .mofa-order-payment.has-receipt {
+        grid-template-columns: minmax(0, 1fr) 15rem;
+        align-items: start;
+    }
+}
+.mofa-order-receipt {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-align: center;
+}
+.mofa-order-receipt img {
+    width: 100%;
+    max-height: 15rem;
+    object-fit: cover;
+    object-position: top;
+    border-radius: 10px;
+    border: 1px solid var(--mofa-hairline);
+    background: #fff;
+    transition: transform 150ms ease;
+}
+.mofa-order-receipt:hover img {
+    transform: translateY(-2px);
+}
+.mofa-order-empty {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--mofa-ink-muted);
+}
+
+/* Customer. */
+.mofa-order-customer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.mofa-order-who {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+}
+.mofa-order-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    border-radius: 999px;
+    background: var(--mofa-cream);
+    font-family: var(--serif-font-family), Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+.mofa-order-name {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.0625rem;
+}
+.mofa-order-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Delivery. */
+.mofa-order-delivery {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+.mofa-order-delivery p {
+    margin: 0;
+}
+.mofa-order-when {
+    font-family: var(--serif-font-family), Georgia, serif;
+    font-size: 1.375rem;
+    font-weight: 700;
+}
+.mofa-order-address {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    padding: 0.875rem 1rem;
+    border-radius: 10px;
+    background: rgb(224 195 164 / 0.3);
+}
+.mofa-order-address .mofa-link {
+    font-size: 0.875rem;
+    align-self: flex-start;
+}
+.mofa-order-notes {
+    margin-top: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-inline-start: 3px solid var(--mofa-terracotta);
+    border-radius: 4px;
+    background: rgb(178 86 61 / 0.07);
+}
+.mofa-order-notes-label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--mofa-ink-muted);
+}
+
+/* Payment: the receipt comes on WhatsApp. */
+.mofa-order-wa {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background: rgb(224 195 164 / 0.3);
+}
+.mofa-order-wa p {
+    margin: 0;
+    font-size: 0.875rem;
 }

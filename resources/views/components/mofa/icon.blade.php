@@ -38,5 +38,38 @@
         @case('phone-pay')
             <rect x="6" y="2.5" width="12" height="19" rx="2.5" /><path d="M10 18h4" /><path d="M9.5 10.5l2 2 3.5-4" />
             @break
+        @case('plus')
+            <path d="M12 5v14M5 12h14" />
+            @break
+        @case('minus')
+            <path d="M5 12h14" />
+            @break
+        @case('trash')
+            <path d="M4 7h16M10 11v6M14 11v6" /><path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12M9 7V4h6v3" />
+            @break
+        @case('copy')
+            <rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3" />
+            @break
+        @case('check')
+            <path d="M5 12.5l4.5 4.5L19 7.5" />
+            @break
+        @case('upload')
+            <path d="M12 16V4M7 9l5-5 5 5" /><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3" />
+            @break
+        @case('clock')
+            <circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" />
+            @break
+        @case('pin')
+            <path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z" /><circle cx="12" cy="10" r="2.3" />
+            @break
+        @case('chat')
+            <path d="M4.5 19.5l1.2-3.6A8 8 0 1 1 8.4 18.6z" />
+            @break
+        @case('chat-send')
+            <path d="M4.5 19.5l1.2-3.6A8 8 0 1 1 8.4 18.6z" /><path d="M9 12.2l2 2 4-4.4" />
+            @break
+        @case('alert')
+            <circle cx="12" cy="12" r="8.5" /><path d="M12 7.5v5.5M12 16.2v.3" />
+            @break
     @endswitch
 </svg>

@@ -23,7 +23,7 @@ class ItemsNeedingAttention extends TableWidget
 
     public static function query(): Builder
     {
-        return Item::query()->where(fn (Builder $q) => $q
+        return Item::query()->where(fn (Builder $query) => $query
             ->where('price', 0)
             ->orWhereNull('images')
             ->orWhereJsonLength('images', 0)

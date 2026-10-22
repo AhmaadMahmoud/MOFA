@@ -34,6 +34,9 @@
 @source not '../../app/Filament';
 @source not '../../storage';
 
+/* Short phone screens (iPhone SE and the like), below lg only. */
+@custom-variant short (@media (max-height: 700px) and (max-width: 63.99rem));
+
 @theme {
     /* ---------- Color: the five brand colors ---------- */
     --color-cream: #e0c3a4;       /* Warm Cream — ground, ~55% */
@@ -85,6 +88,8 @@
 
     body {
         @apply bg-cream font-sans text-brown antialiased;
+        /* Cormorant's old-style figures turn 120 into "I20": prices need lining figures. */
+        font-variant-numeric: lining-nums;
     }
 
     /* Arabic reads better a touch larger and looser than Latin at the same size. */
@@ -177,6 +182,69 @@
     }
     .ornament > i {
         @apply size-1.5 rounded-full bg-brown/55;
+    }
+
+    /* Forms — big, calm fields; 16px text so phones don't zoom in. */
+    .field {
+        @apply flex flex-col gap-1.5;
+    }
+    .field-label {
+        @apply text-[0.9375rem] font-medium text-brown;
+    }
+    .field-hint {
+        @apply text-sm text-ink-muted;
+    }
+    .field-input {
+        @apply min-h-13 w-full rounded-md border-[1.5px] border-brown/20 bg-[#fffaf4] px-4 py-3 text-base text-brown placeholder:text-brown/40 transition outline-none;
+    }
+    .field-input:focus {
+        @apply border-brown bg-[#fffaf4];
+    }
+    .field-input[aria-invalid='true'] {
+        @apply border-terracotta;
+    }
+    textarea.field-input {
+        @apply min-h-24 resize-y leading-relaxed;
+    }
+    .field-error {
+        @apply m-0 flex items-center gap-1.5 text-sm font-medium text-[#8f3a24];
+    }
+
+    /* Choice cards — radios that look like tappable cards. */
+    .choice {
+        @apply relative flex min-h-14 cursor-pointer items-center gap-3 rounded-md border-[1.5px] border-brown/20 bg-paper px-4 py-3 transition;
+    }
+    .choice:hover {
+        @apply border-brown/50;
+    }
+    .choice:has(input:checked) {
+        @apply border-brown bg-[#fffaf4] shadow-[inset_0_0_0_1px_var(--color-brown)];
+    }
+    .choice:has(input:focus-visible) {
+        outline: 2px solid var(--color-brown);
+        outline-offset: 2px;
+    }
+    .choice:has(input:disabled) {
+        @apply cursor-not-allowed opacity-50;
+    }
+    .choice-dot {
+        @apply flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-brown/50;
+    }
+    .choice:has(input:checked) .choice-dot {
+        @apply border-brown bg-brown shadow-[inset_0_0_0_3px_var(--color-paper)];
+    }
+
+    /* The order summary at checkout: a brown receipt with a torn bottom edge. */
+    .mofa-receipt {
+        @apply rounded-t-lg bg-brown;
+        --tear: 0.625rem;
+        padding-bottom: var(--tear);
+        -webkit-mask:
+            linear-gradient(#000 0 0) top / 100% calc(100% - var(--tear)) no-repeat,
+            conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--tear) * 2) var(--tear) repeat-x;
+        mask:
+            linear-gradient(#000 0 0) top / 100% calc(100% - var(--tear)) no-repeat,
+            conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(var(--tear) * 2) var(--tear) repeat-x;
     }
 
     /* Everything that points along the reading direction flips in RTL. */

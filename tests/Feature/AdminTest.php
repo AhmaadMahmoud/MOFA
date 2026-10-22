@@ -136,4 +136,33 @@ class AdminTest extends TestCase
             ->assertSee('ساندويتشات')
             ->assertDontSee('555 kcal');
     }
+
+    public function test_the_site_shows_a_dashboard_button_only_to_admins(): void
+    {
+        $this->get('/en/menu')->assertOk()->assertSee('Go to the dashboard');
+
+        auth()->logout();
+        $this->get('/en/menu')->assertOk()->assertDontSee('Go to the dashboard');
+    }
+
+    public function test_the_admin_can_change_her_password(): void
+    {
+        $user = User::factory()->create(['password' => 'old-password-123']);
+        $this->actingAs($user);
+
+        $this->get('/admin/profile')->assertOk();
+
+        // The current password is required before a new one is saved.
+        Livewire::test(\App\Filament\Pages\Auth\EditProfile::class)
+            ->fillForm(['password' => 'new-password-456', 'passwordConfirmation' => 'new-password-456', 'currentPassword' => 'wrong'])
+            ->call('save')
+            ->assertHasFormErrors(['currentPassword']);
+
+        Livewire::test(\App\Filament\Pages\Auth\EditProfile::class)
+            ->fillForm(['password' => 'new-password-456', 'passwordConfirmation' => 'new-password-456', 'currentPassword' => 'old-password-123'])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('new-password-456', $user->fresh()->password));
+    }
 }

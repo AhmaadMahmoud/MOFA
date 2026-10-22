@@ -107,4 +107,21 @@ class Item extends Model
     {
         return $this->imageUrls()[0] ?? null;
     }
+
+    public function isOrderable(): bool
+    {
+        return $this->price > 0;
+    }
+
+    /** What the browser cart keeps for display. Prices are checked again on the server at checkout. */
+    public function cartPayload(): array
+    {
+        return [
+            'id' => $this->id,
+            'name_en' => $this->name_en,
+            'name_ar' => filled($this->name_ar) ? $this->name_ar : $this->name_en,
+            'price' => $this->price,
+            'image' => $this->coverUrl(),
+        ];
+    }
 }

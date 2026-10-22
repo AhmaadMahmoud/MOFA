@@ -1,8 +1,14 @@
+@props(['switchUrl' => null])
 @php
     use App\Support\Locales;
 
     $other = Locales::other();
-    $switchUrl = Locales::urlFor($other);
+    $switchUrl ??= Locales::urlFor($other);
+
+    // Faten (or any admin) signed in: a way back to the dashboard. Nobody else sees it.
+    $dashboardUrl = auth()->user()?->canAccessPanel(filament()->getPanel('admin'))
+        ? filament()->getPanel('admin')->getUrl()
+        : null;
 
     $links = [
         ['label' => __('Menu'), 'href' => route('menu')],
@@ -25,14 +31,31 @@
 
         <div class="flex items-center gap-1 lg:gap-4">
             <a href="{{ $switchUrl }}" hreflang="{{ $other }}" lang="{{ $other }}"
-               class="flex h-11 min-w-11 items-center justify-center rounded-pill px-3 text-base font-semibold text-brown no-underline hover:bg-paper">
+               class="relative flex h-11 min-w-11 items-center justify-center px-3 text-base font-semibold text-brown no-underline after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-pill after:bg-brown/50 after:transition-transform after:duration-200 after:content-[''] hover:after:scale-x-100">
                 <span class="lg:hidden">{{ $other === 'ar' ? 'ع' : 'EN' }}</span>
                 <span class="hidden lg:inline">{{ $other === 'ar' ? 'عربي' : 'English' }}</span>
             </a>
 
+            @if ($dashboardUrl)
+                {{-- Icon only, like the bag: same size, same hover. --}}
+                <a href="{{ $dashboardUrl }}" class="flex size-11 items-center justify-center rounded-pill text-brown no-underline transition-colors hover:text-ink-muted"
+                   aria-label="{{ __('Dashboard') }}" title="{{ __('Dashboard') }}">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="7" rx="1.5" /><rect x="4" y="13" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="7" height="7" rx="1.5" /></svg>
+                </a>
+            @endif
+
             <x-button :href="route('menu')" class="hidden lg:inline-flex">{{ __('Order now') }}</x-button>
 
-            <button type="button" class="flex size-11 items-center justify-center rounded-pill text-brown hover:bg-paper lg:hidden"
+            {{-- Cart: always reachable, with the count. --}}
+            <button type="button" x-data @click="$store.cart.open = true"
+                    class="relative flex size-11 items-center justify-center rounded-pill text-brown transition-colors hover:text-ink-muted"
+                    :aria-label="@js(__('Your order')) + ($store.cart.count ? ' (' + $store.cart.count + ')' : '')" aria-label="{{ __('Your order') }}">
+                <x-mofa.icon name="bag" />
+                <span x-cloak x-show="$store.cart.count > 0" x-text="$store.cart.count"
+                      class="absolute end-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-pill bg-terracotta px-1 text-[0.6875rem] leading-none font-semibold text-on-terracotta"></span>
+            </button>
+
+            <button type="button" class="flex size-11 items-center justify-center rounded-pill text-brown transition-colors hover:text-ink-muted lg:hidden"
                     @click="open = true" :aria-expanded="open.toString()" aria-controls="mobile-nav" aria-label="{{ __('Open menu') }}">
                 <x-mofa.icon name="menu" />
             </button>
@@ -58,6 +81,9 @@
                 @endforeach
             </nav>
             <div class="mt-auto flex flex-col gap-3 p-5">
+                @if ($dashboardUrl)
+                    <x-button :href="$dashboardUrl" variant="ghost" class="w-full">{{ __('Go to the dashboard') }}</x-button>
+                @endif
                 <x-button :href="route('menu')" class="w-full">{{ __('Order for tomorrow') }}</x-button>
                 <a href="https://www.instagram.com/mofa20261/" target="_blank" rel="noopener" class="flex min-h-12 items-center justify-center gap-2 text-ink-muted no-underline">
                     <x-mofa.icon name="instagram" :size="20" /> <span dir="ltr">@mofa20261</span>

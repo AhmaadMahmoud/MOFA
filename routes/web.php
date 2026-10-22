@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MenuController;
+use App\Models\Order;
 use App\Support\Locales;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -19,4 +20,11 @@ Route::prefix('{locale}')
 
         Route::get('/menu', [MenuController::class, 'index'])->name('menu');
         Route::get('/menu/{item}', [MenuController::class, 'show'])->name('menu.item');
+
+        Route::view('/checkout', 'pages.checkout')->name('checkout');
+
+        // The customer's private order page: only reachable through the signed link we give them.
+        Route::get('/orders/{order}', fn (Order $order) => view('pages.order', ['order' => $order]))
+            ->middleware('signed')
+            ->name('orders.show');
     });

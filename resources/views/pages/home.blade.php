@@ -60,7 +60,7 @@
                 @foreach ([
                     ['basket', __('Pick from the menu'), __('Sandwiches, bagels and ready-made boxes.')],
                     ['calendar', __('Choose your morning'), __('Order today for tomorrow, or book a few days ahead.')],
-                    ['phone-pay', __('Pay with InstaPay'), __('Transfer, upload the receipt, and we confirm your order.')],
+                    ['phone-pay', __('Pay with InstaPay'), __('Transfer with InstaPay, send us the receipt on WhatsApp, and we confirm your order.')],
                 ] as $i => [$icon, $title, $text])
                     <li class="flex items-start gap-4 rounded-md bg-cream p-5 md:flex-col md:p-7">
                         <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-brown text-paper">

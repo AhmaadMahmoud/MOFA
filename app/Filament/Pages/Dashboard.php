@@ -5,12 +5,14 @@ namespace App\Filament\Pages;
 use App\Filament\Resources\Items\ItemResource;
 use App\Filament\Widgets\ItemsNeedingAttention;
 use App\Filament\Widgets\MenuOverview;
+use App\Filament\Widgets\OrdersOverview;
+use App\Filament\Widgets\PaymentsToConfirm;
 use Filament\Actions\Action;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Support\Icons\Heroicon;
 
 /**
- * Faten's home in the dashboard: a greeting, the menu at a glance, and what to fix next.
+ * Faten's home in the dashboard: a greeting, tomorrow's orders, payments to confirm, the menu at a glance, and what to fix next.
  */
 class Dashboard extends BaseDashboard
 {
@@ -34,7 +36,7 @@ class Dashboard extends BaseDashboard
 
     public function getSubheading(): ?string
     {
-        return __("Here's your menu at a glance.");
+        return __("Here's your bakery at a glance.");
     }
 
     protected function getHeaderActions(): array
@@ -55,6 +57,8 @@ class Dashboard extends BaseDashboard
     public function getWidgets(): array
     {
         return [
+            OrdersOverview::class,
+            PaymentsToConfirm::class,
             MenuOverview::class,
             ItemsNeedingAttention::class,
         ];

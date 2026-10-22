@@ -90,7 +90,33 @@ php artisan test
 
 1. **Foundation** ← done: theme, components, layout, Arabic/English + RTL, home page with Hero A, admin panel.
 2. **Menu** ← done: categories, items, nutrition (calories automatic), ingredients, menu and item pages, dashboard screens and theme.
-3. Cart and pre-ordering: Alpine cart, checkout steps, `DeliveryScheduler`.
-4. Payments and orders: InstaPay receipts, order screens, prep list.
-5. Notifications and content.
+3. **Cart and pre-ordering** ← done: browser cart, 3-step checkout (Livewire), `App\Delivery\DeliveryScheduler`, delivery areas, time slots, closed days, settings.
+4. **Orders and payments** ← done: InstaPay with receipt upload, signed order page, order screens, prep list, customers, dashboard widgets.
+5. **Notifications** ← done: customer emails (Arabic/English) and dashboard alerts. WhatsApp can be added later as a channel.
 6. Quality and launch.
+
+## Running the shop
+
+Besides `php artisan serve`, the queue worker sends the emails:
+
+```bash
+php artisan queue:work
+```
+
+On the server, run it with Supervisor. There are no scheduled jobs: unpaid orders are never cancelled automatically.
+
+**How payment works.** The customer transfers with InstaPay and sends the receipt on WhatsApp (the button on their order page opens the chat with the order number written). Faten checks it and presses **Confirm payment** on the order. An unpaid order holds its place in the day until she confirms or cancels it.
+
+Before the first order, fill in the dashboard: **Delivery → Delivery areas** (at least one), **Time slots** (two are created for you), and **Ordering & payment** (the InstaPay address or phone, and the WhatsApp number for receipts). Until then the checkout shows "Online ordering opens soon".
+
+| Where | What |
+| --- | --- |
+| `app/Delivery/DeliveryScheduler.php` | Which days and slots can be booked (cutoff, days off, closed days, capacity) |
+| `app/Ordering/` | `Cart` (server-side pricing), `OrderPlacer`, `OrderWorkflow` (every status change) |
+| `app/Payments/` | `PaymentMethod` interface; `InstapayManual` is the first one |
+| `app/Notifications/` | Customer emails and dashboard alerts |
+| `app/Support/Settings.php` | Shop settings with their defaults |
+| `resources/js/cart.js` | The browser cart (localStorage) |
+| `resources/js/app.js` / `livewire.js` | Plain pages load Alpine alone; checkout and order pages load Livewire's bundle |
+
+Payment receipts are stored on the private `local` disk and only shown to signed-in admins.
