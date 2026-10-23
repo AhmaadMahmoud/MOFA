@@ -62,9 +62,8 @@ class MenuTest extends TestCase
         $this->get('/en/menu/sunrise-roast')
             ->assertOk()
             ->assertSee('Per serving of about 228 g')
-            ->assertSeeInOrder(['555', 'calories'])
-            // Where the calories come from: 160 + 152 + 243 kcal.
-            ->assertSeeInOrder(['Protein', '29% of calories', 'Carbohydrates', '27% of calories', 'Fat', '44% of calories'])
+            ->assertSeeInOrder(['555', 'calories', '40', 'Protein', '38', 'Carbohydrates', '27', 'Fat'])
+            ->assertSee('Fiber 3 g')
             ->assertSeeInOrder(['Sourdough Bread', '60 g', 'Egg', '1'])
             ->assertDontSee('60.00');
     }
@@ -82,5 +81,21 @@ class MenuTest extends TestCase
         Item::factory()->create(['name_en' => 'Plain Toast', 'is_featured' => false]);
 
         $this->get('/en')->assertOk()->assertSee('Bagel Box')->assertDontSee('Plain Toast');
+    }
+
+    public function test_the_demo_shop_seeder_fills_the_menu_with_photos(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('public');
+
+        $this->seed(\Database\Seeders\DemoShopSeeder::class);
+        $this->seed(\Database\Seeders\DemoShopSeeder::class); // safe to run twice
+
+        $this->assertSame(2, Item::query()->count());
+        $fresh = Item::query()->where('slug', 'fresh-start')->sole();
+        $this->assertCount(2, $fresh->images);
+        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($fresh->images);
+        $this->assertSame(5, $fresh->ingredientLines()->count());
+
+        $this->get('/ar/menu/fresh-start')->assertOk()->assertSee('فريش ستارت');
     }
 }

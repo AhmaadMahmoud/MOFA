@@ -13,13 +13,6 @@
     $macros = $macros->map(fn ($m) => $m + ['share' => $macroKcal > 0 ? round((float) $m['grams'] * $m['kcal'] / $macroKcal * 100) : 0]);
     $grams = fn ($v) => (float) $v + 0;
 
-    // The details sit in tabs, so the whole item fits on one screen.
-    $tabs = array_filter([
-        'about' => $description ? __('About') : null,
-        'nutrition' => $item->hasNutrition() ? __('Nutrition') : null,
-        'inside' => $item->ingredientLines->isNotEmpty() ? __("What's inside") : null,
-    ]);
-    $firstTab = array_key_first($tabs);
 @endphp
 <x-layouts.app :title="$name" :description="$description">
     <article class="relative isolate overflow-hidden">
@@ -47,14 +40,14 @@
                         <div class="overflow-hidden rounded-md bg-paper">
                             @if ($images)
                                 <div x-ref="track" @scroll.debounce.60ms="i = Math.round(Math.abs($el.scrollLeft) / $el.clientWidth)"
-                                     class="flex aspect-[16/10] short:aspect-[5/2] snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] lg:aspect-[4/3] [&::-webkit-scrollbar]:hidden">
+                                     class="flex aspect-[2/1] short:aspect-[5/2] sm:aspect-[16/10] snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] lg:aspect-[4/3] [&::-webkit-scrollbar]:hidden">
                                     @foreach ($images as $n => $src)
                                         <img src="{{ $src }}" alt="{{ $n === 0 ? $name : '' }}" @if ($n > 0) loading="lazy" @else fetchpriority="high" @endif decoding="async"
                                              class="size-full shrink-0 snap-center object-cover">
                                     @endforeach
                                 </div>
                             @else
-                                <div class="flex aspect-[16/10] short:aspect-[5/2] items-center justify-center lg:aspect-[4/3]" aria-hidden="true">
+                                <div class="flex aspect-[2/1] short:aspect-[5/2] sm:aspect-[16/10] items-center justify-center lg:aspect-[4/3]" aria-hidden="true">
                                     <img src="{{ asset('images/brand/mofa-header-logo.png') }}" alt="" class="h-16 w-auto opacity-40">
                                 </div>
                             @endif
@@ -88,7 +81,7 @@
                     <header class="flex flex-col gap-1.5">
                         <h1 class="m-0 font-serif text-[2.25rem] short:text-[1.875rem] leading-[1] font-bold tracking-[0.01em] text-balance uppercase sm:text-5xl lg:text-[3.75rem] rtl:leading-[1.25] rtl:tracking-normal rtl:normal-case">{{ $name }}</h1>
                         @if ($tagline = $item->localized('tagline'))
-                            <p class="m-0 self-start"><span class="brush text-[1.375rem] leading-none lg:text-[1.75rem]">{{ $tagline }}</span></p>
+                            <p class="m-0 self-start rtl:mt-1"><span class="brush text-[1.375rem] leading-none lg:text-[1.75rem]">{{ $tagline }}</span></p>
                         @endif
                     </header>
 
@@ -99,104 +92,7 @@
                         </div>
                     @endif
 
-                    @if ($tabs)
-                        <section x-data="{ tab: @js($firstTab), keys: @js(array_keys($tabs)), move(step) { const i = (this.keys.indexOf(this.tab) + step + this.keys.length) % this.keys.length; this.tab = this.keys[i]; $nextTick(() => document.getElementById('tab-' + this.tab).focus()) } }"
-                                 class="flex flex-col gap-3">
-                            @if (count($tabs) > 1)
-                                <div class="flex gap-1 rounded-pill bg-paper p-1" role="tablist" aria-label="{{ __('Details') }}"
-                                     @keydown.arrow-right.prevent="move(document.dir === 'rtl' ? -1 : 1)" @keydown.arrow-left.prevent="move(document.dir === 'rtl' ? 1 : -1)">
-                                    @foreach ($tabs as $key => $label)
-                                        <button type="button" role="tab" id="tab-{{ $key }}" aria-controls="panel-{{ $key }}"
-                                                :aria-selected="(tab === @js($key)).toString()" :tabindex="tab === @js($key) ? 0 : -1"
-                                                @click="tab = @js($key)"
-                                                class="min-h-10 flex-1 rounded-pill px-2 text-sm font-medium transition"
-                                                :class="tab === @js($key) ? 'bg-brown text-paper' : 'text-ink-muted hover:text-brown'">
-                                            {{ $label }}
-                                        </button>
-                                    @endforeach
-                                </div>
-                            @endif
-
-                            {{-- All panels share one cell: the box keeps the tallest height, so nothing jumps when switching. --}}
-                            <div class="grid">
-                                @if (isset($tabs['about']))
-                                    <div id="panel-about" role="tabpanel" aria-labelledby="tab-about" class="[grid-area:1/1]"
-                                         :class="tab !== 'about' && 'invisible'">
-                                        <p class="m-0 text-base leading-relaxed lg:text-lg">{{ $description }}</p>
-                                        <p class="m-0 mt-3 flex items-center gap-2 text-sm text-ink-muted">
-                                            <x-mofa.icon name="calendar" :size="18" class="shrink-0" />
-                                            {{ __('Baked to order. Order today, it reaches you tomorrow morning.') }}
-                                        </p>
-                                    </div>
-                                @endif
-
-                                @if (isset($tabs['nutrition']))
-                                    <div id="panel-nutrition" role="tabpanel" aria-labelledby="tab-nutrition" class="[grid-area:1/1] self-start rounded-md bg-paper p-4 lg:p-5"
-                                         :class="tab !== 'nutrition' && 'invisible'">
-                                        <div class="flex items-end justify-between gap-4">
-                                            <p class="m-0 text-sm text-ink-muted">
-                                                @if ($item->serving_size_g){{ __('Per serving of about :g g', ['g' => $item->serving_size_g]) }}@endif
-                                            </p>
-                                            @if ($item->calories)
-                                                <p class="m-0 flex shrink-0 items-baseline gap-1.5 leading-none">
-                                                    <span class="font-serif text-[2.25rem] font-bold">{{ $item->calories }}</span>
-                                                    <span class="text-sm text-ink-muted">{{ __('calories') }}</span>
-                                                </p>
-                                            @endif
-                                        </div>
-
-                                        @if ($macros->isNotEmpty() && $macroKcal > 0)
-                                            <div class="mt-3 flex h-2.5 overflow-hidden rounded-pill bg-cream" role="img"
-                                                 aria-label="{{ $macros->map(fn ($m) => $m['label'].' '.$m['share'].'%')->join('، ') }}">
-                                                @foreach ($macros as $m)
-                                                    <span class="{{ $m['swatch'] }} h-full border-e-2 border-paper last:border-e-0" style="width: {{ $m['share'] }}%"></span>
-                                                @endforeach
-                                            </div>
-                                            <dl class="m-0 mt-3 grid grid-cols-3 gap-3">
-                                                @foreach ($macros as $m)
-                                                    <div class="flex flex-col gap-0.5">
-                                                        <dt class="flex items-center gap-1.5 text-xs text-ink-muted">
-                                                            <span class="{{ $m['swatch'] }} size-2 shrink-0 rounded-full" aria-hidden="true"></span>{{ $m['label'] }}
-                                                        </dt>
-                                                        <dd class="m-0 font-serif text-xl leading-none font-bold">{{ $grams($m['grams']) }} <span class="font-sans text-xs font-normal">{{ __('g') }}</span></dd>
-                                                        <dd class="m-0 text-xs text-ink-muted">{{ __(':p% of calories', ['p' => $m['share']]) }}</dd>
-                                                    </div>
-                                                @endforeach
-                                            </dl>
-                                        @endif
-
-                                        @if ($item->fiber_g !== null || $item->sugars_g !== null)
-                                            <dl class="m-0 mt-3 flex flex-wrap gap-x-5 border-t border-brown/15 pt-2.5 text-sm">
-                                                @foreach (['fiber_g' => __('Fiber'), 'sugars_g' => __('Sugars')] as $col => $label)
-                                                    @continue($item->{$col} === null)
-                                                    <div class="flex gap-1.5"><dt class="text-ink-muted">{{ $label }}</dt><dd class="m-0 font-semibold">{{ $grams($item->{$col}) }} {{ __('g') }}</dd></div>
-                                                @endforeach
-                                            </dl>
-                                        @endif
-                                        <p class="m-0 mt-2 text-[0.6875rem] leading-snug text-ink-muted short:hidden">{{ __('Approximate values. Calories are worked out from protein, carbohydrates and fat.') }}</p>
-                                    </div>
-                                @endif
-
-                                @if (isset($tabs['inside']))
-                                    <div id="panel-inside" role="tabpanel" aria-labelledby="tab-inside" class="[grid-area:1/1]"
-                                         :class="tab !== 'inside' && 'invisible'">
-                                        {{-- Two columns once there are more than four, to stay short. --}}
-                                        <ul @class(['m-0 grid list-none gap-x-8 p-0', 'grid-cols-2' => $item->ingredientLines->count() > 4])>
-                                            @foreach ($item->ingredientLines as $line)
-                                                <li class="flex min-w-0 items-baseline gap-2 py-1.5">
-                                                    <span class="truncate font-serif text-lg">{{ $line->ingredient->localized('name') }}</span>
-                                                    <span class="min-w-3 flex-1 translate-y-[-0.3em] border-b-2 border-dotted border-brown/30" aria-hidden="true"></span>
-                                                    @if ($amount = $line->amountLabel())
-                                                        <span class="shrink-0 text-sm text-ink-muted">{{ $amount }}</span>
-                                                    @endif
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                @endif
-                            </div>
-                        </section>
-                    @endif
+                    @include('pages.menu.details')
                 </div>
             </div>
         </div>
