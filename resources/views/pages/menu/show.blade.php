@@ -54,12 +54,8 @@
                         </div>
 
                         @if ($item->badge)
-                            {{-- A ribbon flag hanging from the top edge of the photo. --}}
-                            <span class="absolute end-5 -top-1.5 z-10 flex w-[4.25rem] flex-col items-center bg-terracotta px-1.5 pt-4 pb-6 text-center text-[0.8125rem] leading-tight font-semibold text-on-terracotta shadow-soft [clip-path:polygon(0_0,100%_0,100%_100%,50%_calc(100%-0.875rem),0_100%)] lg:w-20 lg:text-sm">
-                                {{ $item->badge->getLabel() }}
-                            </span>
-                            <span class="absolute end-[calc(1.25rem+4.25rem)] -top-1.5 z-10 h-1.5 w-1.5 bg-[#7d3a28] [clip-path:polygon(100%_0,100%_100%,0_100%)] rtl:[clip-path:polygon(0_0,100%_100%,0_100%)] lg:end-[calc(1.25rem+5rem)]" aria-hidden="true"></span>
-                            <span class="absolute end-[calc(1.25rem-0.375rem)] -top-1.5 z-10 h-1.5 w-1.5 bg-[#7d3a28] [clip-path:polygon(0_0,100%_100%,0_100%)] rtl:[clip-path:polygon(100%_0,100%_100%,0_100%)]" aria-hidden="true"></span>
+                            {{-- Same pill as on the menu cards, a touch larger. --}}
+                            <span class="absolute start-3 top-3 z-10 rounded-pill bg-terracotta px-3 py-1.5 text-xs font-medium tracking-[0.12em] text-on-terracotta uppercase rtl:tracking-normal rtl:normal-case lg:start-4 lg:top-4">{{ $item->badge->getLabel() }}</span>
                         @endif
 
                         @if (count($images) > 1)
