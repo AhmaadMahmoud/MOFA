@@ -484,6 +484,35 @@
     }
 }
 
+/* Collapsed on desktop: a slim rail with the icons centred and smaller waves. */
+@media (min-width: 64rem) {
+    .fi-main-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav {
+        padding-inline: 0;
+        align-items: center;
+        scrollbar-gutter: auto;
+        scrollbar-width: none;
+        background-size: 3rem 4.25rem, 3.75rem 5rem;
+    }
+    .fi-main-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav::-webkit-scrollbar {
+        display: none;
+    }
+    .fi-main-sidebar:not(.fi-sidebar-open) .fi-sidebar-nav-groups {
+        margin-inline: 0;
+        width: auto;
+        align-items: center;
+        row-gap: 1.25rem;
+    }
+    .fi-main-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn {
+        width: 2.75rem;
+        height: 2.75rem;
+        padding: 0;
+    }
+    .fi-main-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn:hover,
+    .fi-main-sidebar:not(.fi-sidebar-open) .fi-sidebar-item-btn:focus-visible {
+        transform: none;
+    }
+}
+
 /* ---------- Order page ---------- */
 .mofa-link {
     color: var(--mofa-brown);

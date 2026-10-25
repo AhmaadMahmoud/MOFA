@@ -72,8 +72,11 @@ class DeliverySlotResource extends Resource
                 ToggleColumn::make('is_active')->label(__('Shown')),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make()->hidden(fn (DeliverySlot $record) => $record->orders()->exists()),
+                EditAction::make()->iconButton()->tooltip(__('Edit')),
+                DeleteAction::make()->iconButton()
+                    // Kept for past orders: turn it off instead.
+                    ->disabled(fn (DeliverySlot $record) => $record->orders()->exists())
+                    ->tooltip(fn (DeliverySlot $record) => $record->orders()->exists() ? __('It has orders: turn it off instead') : __('Delete')),
             ])
             ->emptyStateHeading(__('No time slots yet'))
             ->emptyStateDescription(__('Add the delivery windows customers can choose, like 8–10 am.'));

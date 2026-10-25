@@ -87,10 +87,10 @@ class CategoryResource extends Resource
                 ToggleColumn::make('is_active')->label(__('Shown')),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make()
+                EditAction::make()->iconButton()->tooltip(__('Edit')),
+                DeleteAction::make()->iconButton()
                     ->disabled(fn (Category $record) => $record->items()->exists())
-                    ->tooltip(fn (Category $record) => $record->items()->exists() ? __('Move or delete its items first') : null),
+                    ->tooltip(fn (Category $record) => $record->items()->exists() ? __('Move or delete its items first') : __('Delete')),
             ])
             ->emptyStateHeading(__('No categories yet'))
             ->emptyStateDescription(__('Start with groups like Sandwiches, Bagels or Boxes.'));

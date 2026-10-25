@@ -10,7 +10,6 @@ use App\Models\DeliverySlot;
 use App\Models\DeliveryZone;
 use App\Models\Order;
 use App\Notifications\AdminAlerts;
-use App\Notifications\Customer\OrderPlaced;
 use App\Payments\PaymentMethods;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -96,7 +95,6 @@ final class OrderPlacer
             return $order;
         });
 
-        $order->customer->notify(new OrderPlaced($order));
         AdminAlerts::newOrder($order);
 
         return $order;

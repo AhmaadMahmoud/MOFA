@@ -61,10 +61,10 @@ class IngredientResource extends Resource
                 TextColumn::make('items_count')->label(__('Used in'))->counts('items')->badge(),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make()
+                EditAction::make()->iconButton()->tooltip(__('Edit')),
+                DeleteAction::make()->iconButton()
                     ->disabled(fn (Ingredient $record) => $record->items()->exists())
-                    ->tooltip(fn (Ingredient $record) => $record->items()->exists() ? __('Remove it from its items first') : null),
+                    ->tooltip(fn (Ingredient $record) => $record->items()->exists() ? __('Remove it from its items first') : __('Delete')),
             ])
             ->emptyStateHeading(__('No ingredients yet'))
             ->emptyStateDescription(__('Ingredients can also be added right from an item.'));

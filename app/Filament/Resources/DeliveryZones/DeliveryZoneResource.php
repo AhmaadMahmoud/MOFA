@@ -11,6 +11,8 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -46,6 +48,12 @@ class DeliveryZoneResource extends Resource
         return $schema->components([
             TextInput::make('name_en')->label(__('Name (English)'))->required()->maxLength(255)->extraInputAttributes(['dir' => 'ltr']),
             TextInput::make('name_ar')->label(__('Name (Arabic)'))->required()->maxLength(255)->extraInputAttributes(['dir' => 'rtl']),
+            // Pickup first: a pickup place has no address and no delivery fee.
+            Toggle::make('is_pickup')
+                ->label(__('Pickup from the bakery'))
+                ->helperText(__('Only for the bakery itself: customers choosing it don\'t enter an address. Leave it off for delivery areas.'))
+                ->live()
+                ->afterStateUpdated(fn (bool $state, Set $set) => $state ? $set('fee', 0) : null),
             TextInput::make('fee')
                 ->label(__('Delivery fee'))
                 ->numeric()
@@ -54,11 +62,9 @@ class DeliveryZoneResource extends Resource
                 ->suffix(__('EGP'))
                 ->default(0)
                 ->required()
+                ->hidden(fn (Get $get) => (bool) $get('is_pickup'))
                 ->formatStateUsing(fn ($state) => Money::toPounds($state === null ? null : (int) $state))
                 ->dehydrateStateUsing(fn ($state) => Money::toPiasters($state) ?? 0),
-            Toggle::make('is_pickup')
-                ->label(__('Pickup from the bakery'))
-                ->helperText(__('Customers choosing this don\'t enter an address.')),
             Toggle::make('is_active')->label(__('Shown at checkout'))->default(true),
         ])->columns(1);
     }
@@ -76,9 +82,11 @@ class DeliveryZoneResource extends Resource
                 ToggleColumn::make('is_active')->label(__('Shown')),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make()
-                    ->hidden(fn (DeliveryZone $record) => $record->orders()->exists()),
+                EditAction::make()->iconButton()->tooltip(__('Edit')),
+                DeleteAction::make()->iconButton()
+                    // Kept for past orders: hide it from checkout instead.
+                    ->disabled(fn (DeliveryZone $record) => $record->orders()->exists())
+                    ->tooltip(fn (DeliveryZone $record) => $record->orders()->exists() ? __('It has orders: turn it off instead') : __('Delete')),
             ])
             ->emptyStateHeading(__('No delivery areas yet'))
             ->emptyStateDescription(__('Add the areas you deliver to, each with its fee. Add "Pickup" with no fee if customers can collect.'));

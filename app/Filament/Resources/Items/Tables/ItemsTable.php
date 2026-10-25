@@ -64,7 +64,7 @@ class ItemsTable
                 TernaryFilter::make('is_featured')->label(__('Featured')),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->iconButton()->tooltip(__('Edit')),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -200,5 +200,5 @@
         </aside>
     </div>
 
-    <p class="m-0 mt-8 text-center text-xs text-ink-muted">{{ __('Keep this page: the link in your email brings you back here.') }}</p>
+    <p class="m-0 mt-8 text-center text-xs text-ink-muted">{{ __('Save this page to come back to it. Once your order is confirmed, the email we send has the link too.') }}</p>
 </div>

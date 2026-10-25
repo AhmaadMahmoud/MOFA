@@ -87,7 +87,6 @@ class ViewOrder extends ViewRecord
                 ->icon(Heroicon::OutlinedTruck)
                 ->visible(fn () => $this->record->status === OrderStatus::Confirmed)
                 ->requiresConfirmation()
-                ->modalDescription(__('The customer gets an email.'))
                 ->action(function () use ($workflow) {
                     $workflow->markOutForDelivery($this->record);
                     $this->refreshRecord();

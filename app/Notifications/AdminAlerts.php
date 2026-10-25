@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Support\Money;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\Notification as NotificationSender;
 
 /**
  * The bell in the dashboard. Every admin user gets these.
@@ -41,7 +42,7 @@ final class AdminAlerts
             'date' => $order->delivery_date->format('D j M'),
         ];
 
-        Notification::make()
+        $alert = Notification::make()
             ->title(__($title, $params, 'en'))
             ->body(__($body, $params, 'en'))
             ->icon($icon)
@@ -51,7 +52,9 @@ final class AdminAlerts
                     ->label('Open order')
                     ->url(OrderResource::getUrl('view', ['record' => $order], panel: 'admin'))
                     ->markAsRead(),
-            ])
-            ->sendToDatabase($users);
+            ]);
+
+        // Saved right away, not through the queue: the bell must work even when no queue worker runs.
+        NotificationSender::sendNow($users, $alert->toDatabase());
     }
 }

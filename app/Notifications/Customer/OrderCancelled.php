@@ -4,6 +4,16 @@ namespace App\Notifications\Customer;
 
 class OrderCancelled extends OrderNotification
 {
+    protected function status(): string
+    {
+        return __('Cancelled');
+    }
+
+    protected function statusColor(): string
+    {
+        return '#6a4630';
+    }
+
     protected function subject(): string
     {
         return __('Your order was cancelled');

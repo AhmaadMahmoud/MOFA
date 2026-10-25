@@ -28,3 +28,21 @@ Route::prefix('{locale}')
             ->middleware('signed')
             ->name('orders.show');
     });
+
+// Local only: see each customer email in the browser, for the latest order.
+//   /_mail/confirmed?locale=ar
+if (app()->isLocal()) {
+    Route::get('/_mail/{type}', function (Request $request, string $type) {
+        $class = [
+            'confirmed' => \App\Notifications\Customer\OrderConfirmed::class,
+        ][$type] ?? abort(404);
+
+        $order = Order::query()->latest('id')->firstOrFail();
+        $locale = in_array($request->query('locale'), Locales::supported(), true) ? $request->query('locale') : $order->locale;
+
+        app()->setLocale($locale);
+        $order->locale = $locale;
+
+        return (new $class($order))->toMail($order->customer)->render();
+    })->name('mail.preview');
+}

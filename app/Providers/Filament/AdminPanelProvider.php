@@ -55,6 +55,7 @@ class AdminPanelProvider extends PanelProvider
                 'danger' => Color::Red,
             ])
             ->sidebarCollapsibleOnDesktop()
+            ->collapsedSidebarWidth('5.5rem')
             ->maxContentWidth('7xl')
             ->userMenuItems([
                 // One tap to the other dashboard language.
@@ -72,7 +73,7 @@ class AdminPanelProvider extends PanelProvider
                 })->name('locale');
             })
             ->databaseNotifications()
-            ->databaseNotificationsPolling('60s')
+            ->databaseNotificationsPolling('30s')
             ->navigationGroups([
                 NavigationGroup::make(fn () => __('Orders')),
                 NavigationGroup::make(fn () => __('Menu')),

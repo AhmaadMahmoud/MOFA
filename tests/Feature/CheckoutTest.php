@@ -11,7 +11,6 @@ use App\Models\DeliveryZone;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\User;
-use App\Notifications\Customer\OrderPlaced;
 use App\Support\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,7 +95,8 @@ class CheckoutTest extends TestCase
         // Phone stored in one shape.
         $this->assertSame('01012345678', $order->customer->phone);
 
-        Notification::assertSentTo($order->customer, OrderPlaced::class);
+        // No email when ordering: the customer only hears from us once Faten confirms.
+        Notification::assertNotSentTo($order->customer, \App\Notifications\Customer\OrderConfirmed::class);
         Notification::assertSentTo(User::query()->first(), \Filament\Notifications\DatabaseNotification::class);
     }
 

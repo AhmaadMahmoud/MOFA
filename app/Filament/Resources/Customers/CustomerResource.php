@@ -72,7 +72,7 @@ class CustomerResource extends Resource
                     ->label(__('Orders'))
                     ->icon(Heroicon::OutlinedShoppingBag)
                     ->url(fn (Customer $record) => OrderResource::getUrl('index', ['tab' => 'all', 'search' => $record->phone])),
-                EditAction::make(),
+                EditAction::make()->iconButton()->tooltip(__('Edit')),
             ])
             ->emptyStateHeading(__('No customers yet'))
             ->emptyStateDescription(__('Everyone who orders appears here, matched by phone number.'));

@@ -118,26 +118,51 @@
                             </div>
 
                             {{-- Day --}}
-                            <fieldset class="m-0 flex min-w-0 flex-col gap-2.5 border-0 p-0">
-                                <legend class="field-label mb-2.5 p-0">{{ __('Day') }}</legend>
+                            {{-- One row that scrolls, however many days are open; arrows beside the label from sm up. --}}
+                            <fieldset x-data="{
+                                    atStart: true, atEnd: false,
+                                    sync() { const t = this.$refs.days, x = Math.abs(t.scrollLeft); this.atStart = x < 4; this.atEnd = x + t.clientWidth >= t.scrollWidth - 4 },
+                                    page(dir) { const t = this.$refs.days; t.scrollBy({ left: dir * t.clientWidth * 0.8 * (document.dir === 'rtl' ? -1 : 1), behavior: 'smooth' }) },
+                                 }" x-init="$nextTick(() => { sync(); $refs.days.querySelector('[data-picked]')?.closest('label')?.scrollIntoView({ block: 'nearest', inline: 'nearest' }) })"
+                                      class="m-0 flex min-w-0 flex-col gap-2.5 border-0 p-0">
+                                <legend class="sr-only">{{ __('Day') }}</legend>
+                                <div class="flex items-center justify-between gap-3">
+                                    <span class="field-label" aria-hidden="true">{{ __('Day') }}</span>
+                                    <div class="hidden items-center gap-1.5 sm:flex">
+                                        <button type="button" @click="page(-1)" :disabled="atStart" aria-label="{{ __('Earlier days') }}"
+                                                class="flex size-9 items-center justify-center rounded-full border border-brown/15 bg-[#fffaf4] text-brown transition hover:border-brown/50 disabled:cursor-default disabled:opacity-35 disabled:hover:border-brown/15">
+                                            <x-mofa.icon name="arrow" :size="16" class="rotate-180 rtl:rotate-0" />
+                                        </button>
+                                        <button type="button" @click="page(1)" :disabled="atEnd" aria-label="{{ __('Later days') }}"
+                                                class="flex size-9 items-center justify-center rounded-full border border-brown/15 bg-[#fffaf4] text-brown transition hover:border-brown/50 disabled:cursor-default disabled:opacity-35 disabled:hover:border-brown/15">
+                                            <x-mofa.icon name="arrow" :size="16" class="rtl:rotate-180" />
+                                        </button>
+                                    </div>
+                                </div>
                                 @if ($this->days->first()?->key() !== $tomorrow)
                                     <p class="field-hint m-0 -mt-1">{{ __('Orders placed after :time are delivered from the day after tomorrow.', ['time' => \Illuminate\Support\Carbon::createFromFormat('H:i', Settings::cutoff())->locale($locale)->translatedFormat('g:i A')]) }}</p>
                                 @endif
-                                <div class="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:-mx-7 sm:px-7 lg:mx-0 lg:grid lg:grid-cols-7 lg:px-0 [&::-webkit-scrollbar]:hidden">
+                                <div class="relative">
+                                <div x-ref="days" @scroll.debounce.50ms="sync()"
+                                     class="-mx-5 flex snap-x gap-2 overflow-x-auto scroll-px-5 px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:scroll-px-0 sm:px-0 [&::-webkit-scrollbar]:hidden">
                                     @foreach ($this->days as $day)
                                         @php($open = $day->isAvailable())
                                         <label @class([
-                                            'relative flex w-[4.75rem] shrink-0 snap-start cursor-pointer flex-col items-center gap-0.5 rounded-md border-[1.5px] px-1 py-2.5 text-center transition lg:w-auto',
+                                            'relative flex w-[4.75rem] shrink-0 snap-start cursor-pointer flex-col items-center gap-0.5 rounded-md border-[1.5px] px-1 py-2.5 text-center transition',
                                             'border-brown bg-brown text-paper' => $date === $day->key(),
                                             'border-brown/15 bg-[#fffaf4] hover:border-brown/50' => $date !== $day->key() && $open,
                                             'cursor-not-allowed border-transparent bg-brown/5 text-brown/35' => ! $open,
                                         ])>
-                                            <input type="radio" name="date" value="{{ $day->key() }}" wire:model.live="date" class="sr-only" @disabled(! $open)>
+                                            <input type="radio" name="date" value="{{ $day->key() }}" wire:model.live="date" class="sr-only" @disabled(! $open) @if ($date === $day->key()) data-picked @endif>
                                             <span class="text-[0.6875rem] font-medium">{{ $day->key() === $tomorrow ? __('Tomorrow') : $day->date->locale($locale)->translatedFormat('D') }}</span>
                                             <span class="font-serif text-[1.625rem] leading-none font-bold">{{ $day->date->format('j') }}</span>
                                             <span class="text-[0.6875rem]">{{ $open ? $day->date->locale($locale)->translatedFormat('M') : __('Full') }}</span>
                                         </label>
                                     @endforeach
+                                </div>
+                                {{-- Soft edges and arrows: only where there is more to see. --}}
+                                <div x-show="!atStart" x-transition.opacity class="pointer-events-none absolute inset-y-0 start-0 hidden w-10 bg-gradient-to-r from-paper to-transparent sm:block rtl:bg-gradient-to-l"></div>
+                                <div x-show="!atEnd" x-transition.opacity class="pointer-events-none absolute inset-y-0 end-0 hidden w-10 bg-gradient-to-l from-paper to-transparent sm:block rtl:bg-gradient-to-r"></div>
                                 </div>
                                 @error('date') <p class="field-error"><x-mofa.icon name="alert" :size="16" /> {{ $message }}</p> @enderror
                             </fieldset>

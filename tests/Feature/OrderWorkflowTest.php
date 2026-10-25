@@ -6,10 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\User;
-use App\Notifications\Customer\OrderCancelled;
 use App\Notifications\Customer\OrderConfirmed;
-use App\Notifications\Customer\OrderOutForDelivery;
-use App\Notifications\Customer\OrderPlaced;
 use App\Ordering\OrderWorkflow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -61,13 +58,13 @@ class OrderWorkflowTest extends TestCase
         $this->assertSame(OrderStatus::Confirmed, $order->fresh()->status);
     }
 
-    public function test_delivery_steps_and_their_emails(): void
+    public function test_delivery_steps_send_no_email(): void
     {
         $order = Order::factory()->withPayment(PaymentStatus::Confirmed)->create();
 
         $this->workflow->markOutForDelivery($order);
         $this->assertSame(OrderStatus::OutForDelivery, $order->fresh()->status);
-        Notification::assertSentTo($order->customer, OrderOutForDelivery::class);
+        Notification::assertNothingSent();
 
         $this->workflow->markDelivered($order->fresh());
         $this->assertSame(OrderStatus::Delivered, $order->fresh()->status);
@@ -89,7 +86,7 @@ class OrderWorkflowTest extends TestCase
 
         $this->assertSame(OrderStatus::Cancelled, $order->fresh()->status);
         $this->assertSame('Oven broke down', $order->fresh()->cancel_reason);
-        Notification::assertSentTo($order->customer, OrderCancelled::class);
+        Notification::assertNothingSent();
     }
 
     public function test_nothing_cancels_unpaid_orders_automatically(): void
@@ -105,10 +102,10 @@ class OrderWorkflowTest extends TestCase
     public function test_customer_emails_render_in_the_order_language(): void
     {
         Notification::swap(new \Illuminate\Notifications\ChannelManager($this->app));
-        $order = Order::factory()->status(OrderStatus::PendingPayment)->withPayment()->create(['locale' => 'ar']);
+        $order = Order::factory()->status(OrderStatus::Confirmed)->withPayment(PaymentStatus::Confirmed)->create(['locale' => 'ar']);
         $order->items()->create(['name_en' => 'Plain Bagel', 'name_ar' => 'بيجل سادة', 'unit_price' => 4500, 'quantity' => 2, 'line_total' => 9000]);
 
-        $html = (string) (new OrderPlaced($order))->toMail($order->customer)->render();
+        $html = (string) (new OrderConfirmed($order))->toMail($order->customer)->render();
 
         $this->assertStringContainsString('dir="rtl"', $html);
         $this->assertStringContainsString('بيجل سادة', $html);

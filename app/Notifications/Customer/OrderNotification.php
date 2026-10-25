@@ -43,6 +43,15 @@ abstract class OrderNotification extends Notification implements ShouldQueue
         return true;
     }
 
+    /** The small label above the headline: where the order stands. */
+    abstract protected function status(): string;
+
+    /** Brand colour behind that label: terracotta, olive, mauve or brown. */
+    protected function statusColor(): string
+    {
+        return '#b2563d';
+    }
+
     public function toMail(object $notifiable): MailMessage
     {
         $order = $this->order->loadMissing('items');
@@ -52,11 +61,14 @@ abstract class OrderNotification extends Notification implements ShouldQueue
             ->view('emails.order', [
                 'order' => $order,
                 'name' => $order->customer->name,
+                'status' => $this->status(),
+                'statusColor' => $this->statusColor(),
                 'headline' => $this->headline(),
                 'lines' => $this->lines(),
                 'buttonLabel' => $this->buttonLabel(),
                 'buttonUrl' => $order->publicUrl(),
                 'showSummary' => $this->showSummary(),
+                'whatsapp' => \App\Support\Settings::whatsappLink(__('Hello MOFA, I have a question about order :number', ['number' => $order->number])),
             ]);
     }
 }

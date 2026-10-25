@@ -62,7 +62,7 @@ class ClosedDateResource extends Resource
                 TextColumn::make('date')->label(__('Date'))->date('l j F Y')->weight('semibold'),
                 TextColumn::make('note')->label(__('Note'))->placeholder('—'),
             ])
-            ->recordActions([EditAction::make(), DeleteAction::make()])
+            ->recordActions([EditAction::make()->iconButton()->tooltip(__('Edit')), DeleteAction::make()->iconButton()->tooltip(__('Delete'))])
             ->emptyStateHeading(__('No closed days coming up'))
             ->emptyStateDescription(__('Add holidays or days off, and customers won\'t be able to pick them.'));
     }

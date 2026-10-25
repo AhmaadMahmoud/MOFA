@@ -6,9 +6,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\User;
-use App\Notifications\Customer\OrderCancelled;
 use App\Notifications\Customer\OrderConfirmed;
-use App\Notifications\Customer\OrderOutForDelivery;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -37,6 +35,7 @@ final class OrderWorkflow
             $order->update(['status' => OrderStatus::Confirmed, 'confirmed_at' => now()]);
         });
 
+        // The only email the customer gets: their order is confirmed.
         $order->customer->notify(new OrderConfirmed($order));
     }
 
@@ -44,7 +43,6 @@ final class OrderWorkflow
     {
         $this->guard($order, [OrderStatus::Confirmed]);
         $order->update(['status' => OrderStatus::OutForDelivery]);
-        $order->customer->notify(new OrderOutForDelivery($order));
     }
 
     public function markDelivered(Order $order): void
@@ -64,7 +62,6 @@ final class OrderWorkflow
             'cancelled_at' => now(),
             'cancel_reason' => filled($reason) ? $reason : null,
         ]);
-        $order->customer->notify(new OrderCancelled($order));
     }
 
     private function guard(Order $order, array $allowed): void
