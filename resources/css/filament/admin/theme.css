@@ -13,7 +13,6 @@
 @import '@fontsource/tajawal/arabic-400.css';
 @import '@fontsource/tajawal/arabic-500.css';
 @import '@fontsource/tajawal/arabic-700.css';
-@import '@fontsource/amiri/arabic-700.css';
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';

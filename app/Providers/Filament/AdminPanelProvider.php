@@ -45,7 +45,7 @@ class AdminPanelProvider extends PanelProvider
             // Self-hosted through the theme. Filament wraps the family in quotes,
             // so the Arabic fallback is spliced into the same declaration.
             ->font("Jost', 'Tajawal", provider: LocalFontProvider::class)
-            ->serifFont("Cormorant Garamond', 'Amiri", provider: LocalFontProvider::class)
+            ->serifFont("Cormorant Garamond', 'Tajawal", provider: LocalFontProvider::class)
             ->colors([
                 'primary' => BrandPalette::brown(),
                 'gray' => BrandPalette::gray(),

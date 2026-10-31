@@ -10,7 +10,7 @@
     @endif
     <{{ $as }} @class([
         'm-0 text-brown text-balance',
-        'font-retro font-normal uppercase leading-[0.95] tracking-[-0.01em] text-[2.75rem] sm:text-6xl' => $retro,
+        'font-retro font-normal uppercase leading-[0.95] tracking-[-0.01em] text-[2.75rem] sm:text-6xl rtl:font-extrabold rtl:normal-case' => $retro,
         'font-serif font-bold leading-[1.1] text-[2rem] sm:text-[2.625rem]' => ! $retro,
     ])>{{ $slot }}</{{ $as }}>
 </div>

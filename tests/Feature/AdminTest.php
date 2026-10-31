@@ -66,7 +66,6 @@ class AdminTest extends TestCase
             ->fillForm([
                 'name_en' => 'Sunrise Roast',
                 'name_ar' => 'صن رايز روست',
-                'slug' => 'sunrise-roast',
                 'category_id' => $category->id,
                 'price' => '95.5',
                 'protein_g' => 40,
@@ -164,5 +163,20 @@ class AdminTest extends TestCase
             ->assertHasNoFormErrors();
 
         $this->assertTrue(\Illuminate\Support\Facades\Hash::check('new-password-456', $user->fresh()->password));
+    }
+
+    public function test_the_link_is_made_from_the_name_and_kept_unique(): void
+    {
+        $category = Category::factory()->create();
+        $first = Item::factory()->create(['category_id' => $category->id, 'name_en' => 'Fresh Start Bagel', 'slug' => null]);
+        $second = Item::factory()->create(['category_id' => $category->id, 'name_en' => 'Fresh Start Bagel', 'slug' => null]);
+
+        $this->assertSame('fresh-start-bagel', $first->slug);
+        $this->assertSame('fresh-start-bagel-2', $second->slug);
+
+        // Renaming keeps the link, so shared links never break.
+        $first->update(['name_en' => 'Morning Bagel']);
+        $this->assertSame('fresh-start-bagel', $first->fresh()->slug);
+        $this->assertSame('bagels', Category::factory()->create(['name_en' => 'Bagels', 'slug' => null])->slug);
     }
 }

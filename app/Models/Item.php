@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ItemBadge;
 use App\Models\Concerns\HasLocalizedAttributes;
+use App\Models\Concerns\HasSlug;
 use App\Support\Money;
 use App\Support\Nutrition;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Storage;
 ])]
 class Item extends Model
 {
-    use HasFactory, HasLocalizedAttributes;
+    use HasFactory, HasLocalizedAttributes, HasSlug;
 
     /** The nutrition facts shown on the item page, in display order. */
     public const NUTRIENTS = ['protein_g' => 'Protein', 'carbs_g' => 'Carbohydrates', 'fat_g' => 'Fat', 'fiber_g' => 'Fiber', 'sugars_g' => 'Sugars'];
@@ -98,7 +99,8 @@ class Item extends Model
     {
         return collect($this->images ?? [])
             ->filter()
-            ->map(fn (string $path) => Storage::disk('public')->url($path))
+            // The edit time busts the browser cache when a photo is replaced under the same name.
+            ->map(fn (string $path) => Storage::disk('public')->url($path).($this->updated_at ? '?v='.$this->updated_at->timestamp : ''))
             ->values()
             ->all();
     }

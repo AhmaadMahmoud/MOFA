@@ -30,10 +30,10 @@
         </nav>
 
         <div class="flex items-center gap-1 lg:gap-4">
-            <a href="{{ $switchUrl }}" hreflang="{{ $other }}" lang="{{ $other }}"
-               class="relative flex h-11 min-w-11 items-center justify-center px-3 text-base font-semibold text-brown no-underline after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-pill after:bg-brown/50 after:transition-transform after:duration-200 after:content-[''] hover:after:scale-x-100">
-                <span class="lg:hidden">{{ $other === 'ar' ? 'ع' : 'EN' }}</span>
-                <span class="hidden lg:inline">{{ $other === 'ar' ? 'عربي' : 'English' }}</span>
+            {{-- Short code (AR / EN); the full language name is read out to screen readers. --}}
+            <a href="{{ $switchUrl }}" hreflang="{{ $other }}" aria-label="{{ $other === 'ar' ? 'العربية' : 'English' }}"
+               class="relative flex h-11 min-w-11 items-center justify-center px-3 text-base font-semibold tracking-[0.08em] text-brown no-underline after:absolute after:inset-x-3 after:bottom-0.5 after:h-0.5 after:origin-center after:scale-x-0 after:rounded-pill after:bg-brown/50 after:transition-transform after:duration-200 after:content-[''] hover:after:scale-x-100">
+                <span dir="ltr">{{ strtoupper($other) }}</span>
             </a>
 
             @if ($dashboardUrl)

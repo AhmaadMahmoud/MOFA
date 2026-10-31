@@ -90,11 +90,12 @@ class MenuTest extends TestCase
         $this->seed(\Database\Seeders\DemoShopSeeder::class);
         $this->seed(\Database\Seeders\DemoShopSeeder::class); // safe to run twice
 
-        $this->assertSame(2, Item::query()->count());
+        $this->assertSame(5, Item::query()->count());
+        $this->assertSame(3, Item::query()->whereHas('category', fn ($query) => $query->where('slug', 'bagels'))->count());
         $fresh = Item::query()->where('slug', 'fresh-start')->sole();
-        $this->assertCount(2, $fresh->images);
+        $this->assertCount(1, $fresh->images);
         \Illuminate\Support\Facades\Storage::disk('public')->assertExists($fresh->images);
-        $this->assertSame(5, $fresh->ingredientLines()->count());
+        $this->assertSame(6, $fresh->ingredientLines()->count());
 
         $this->get('/ar/menu/fresh-start')->assertOk()->assertSee('فريش ستارت');
     }

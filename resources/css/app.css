@@ -23,9 +23,7 @@
 @import '@fontsource/tajawal/arabic-400.css';
 @import '@fontsource/tajawal/arabic-500.css';
 @import '@fontsource/tajawal/arabic-700.css';
-@import '@fontsource/amiri/arabic-700.css';
-@import '@fontsource/lalezar/arabic-400.css';
-@import '@fontsource/aref-ruqaa/arabic-700.css';
+@import '@fontsource/tajawal/arabic-800.css';
 
 /* The public site only uses its own views; never scan vendor (Filament alone is thousands of classes). */
 @source not '../../vendor';
@@ -53,9 +51,9 @@
 
     /* ---------- Type ---------- */
     --font-sans: 'Jost', 'Tajawal', 'Futura', 'Century Gothic', ui-sans-serif, system-ui, sans-serif;
-    --font-serif: 'Cormorant Garamond', 'Amiri', Georgia, ui-serif, serif;
-    --font-retro: 'Bagel Fat One', 'Lalezar', 'Cooper Black', Georgia, serif;
-    --font-script: 'Caveat', 'Aref Ruqaa', 'Bradley Hand', cursive;
+    --font-serif: 'Cormorant Garamond', 'Tajawal', Georgia, ui-serif, serif;
+    --font-retro: 'Bagel Fat One', 'Tajawal', 'Cooper Black', Georgia, serif;
+    --font-script: 'Caveat', 'Tajawal', 'Bradley Hand', cursive;
 
     --text-eyebrow: 0.8125rem;
     --text-eyebrow--line-height: 1.4;

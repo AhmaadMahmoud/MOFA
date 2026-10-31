@@ -79,7 +79,7 @@ php artisan test
 - **Bilingual data.** Translated fields are two columns, `name_en` and `name_ar`; read them with `$model->localized('name')`.
 - **Calories are never typed in.** `Item` recalculates them from the macros on every save.
 - **Icons.** Use `<x-mofa.icon>`. `<x-icon>` belongs to Filament's blade-icons package.
-- **Fonts.** Self-hosted via `@fontsource`. Each family pairs an English face with an Arabic one (Jost/Tajawal, Cormorant Garamond/Amiri, Bagel Fat One/Lalezar, Caveat/Aref Ruqaa). The Arabic faces are awaiting Faten's approval.
+- **Fonts.** Self-hosted via `@fontsource`. English uses Jost (text), Cormorant Garamond (headings), Bagel Fat One (retro) and Caveat (script); all Arabic text, on the site and in the dashboard, uses Tajawal.
 
 ## Placeholders to replace
 

@@ -8,30 +8,33 @@ import { cartStore } from './cart';
 /**
  * Menu category bar: highlights the category in view and keeps its chip visible.
  */
-const categoryBar = () => ({
-    active: null,
+/**
+ * The menu filter: "all" or one category. Follows the #slug in the address,
+ * so "Back to the menu" from an item opens its category.
+ */
+const menuFilter = (slugs) => ({
+    active: 'all',
 
     init() {
-        const sections = [...document.querySelectorAll('[data-category]')];
-        this.active = sections[0]?.id ?? null;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-                if (visible.length) {
-                    this.setActive(visible[0].target.id);
-                }
-            },
-            { rootMargin: '-80px 0px -60% 0px' },
-        );
-        sections.forEach((s) => observer.observe(s));
+        this.fromHash();
+        window.addEventListener('hashchange', () => this.fromHash());
     },
 
-    setActive(id) {
-        if (this.active === id) return;
-        this.active = id;
-        const chip = this.$refs.list.querySelector(`[data-target="${CSS.escape(id)}"]`);
-        chip?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+    fromHash() {
+        const slug = decodeURIComponent(window.location.hash.slice(1));
+        this.active = slugs.includes(slug) ? slug : 'all';
+    },
+
+    pick(slug) {
+        this.active = slug;
+        history.replaceState(null, '', slug === 'all' ? window.location.pathname : `#${slug}`);
+        // Back to the top of the list when the filter bar is already stuck.
+        const top = this.$refs.sections.getBoundingClientRect().top + window.scrollY - 80;
+        if (window.scrollY > top) window.scrollTo({ top, behavior: 'smooth' });
+    },
+
+    shows(slug) {
+        return this.active === 'all' || this.active === slug;
     },
 });
 
@@ -83,7 +86,7 @@ const copy = (value) => ({
 
 export function registerMofa(Alpine) {
     Alpine.store('cart', cartStore);
-    Alpine.data('categoryBar', categoryBar);
+    Alpine.data('menuFilter', menuFilter);
     Alpine.data('countdown', countdown);
     Alpine.data('copy', copy);
 }

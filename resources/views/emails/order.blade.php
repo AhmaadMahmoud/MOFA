@@ -11,11 +11,11 @@
     $dir = $rtl ? 'rtl' : 'ltr';
     $start = $rtl ? 'right' : 'left';
     $end = $rtl ? 'left' : 'right';
-    // The brand's fonts (Jost / Cormorant Garamond, Tajawal / Amiri in Arabic). Apple Mail and most
+    // The brand's fonts (Jost / Cormorant Garamond / Caveat; Tajawal for all Arabic text). Apple Mail and most
     // phone apps load them; Gmail and Outlook fall back to the system fonts after them.
     $sans = $rtl ? "'Tajawal', Tahoma, 'Segoe UI', Arial, sans-serif" : "'Jost', 'Helvetica Neue', Helvetica, Arial, sans-serif";
-    $serif = $rtl ? "'Amiri', Tahoma, 'Segoe UI', serif" : "'Cormorant Garamond', Georgia, 'Times New Roman', serif";
-    $script = $rtl ? "'Aref Ruqaa', 'Amiri', serif" : "'Caveat', 'Bradley Hand', cursive";
+    $serif = $rtl ? "'Tajawal', Tahoma, 'Segoe UI', sans-serif" : "'Cormorant Garamond', Georgia, 'Times New Roman', serif";
+    $script = $rtl ? "'Tajawal', Tahoma, sans-serif" : "'Caveat', 'Bradley Hand', cursive";
 
     $brown = '#4b2c16';
     $muted = '#6a4630';
@@ -35,7 +35,7 @@
     <meta name="supported-color-schemes" content="light">
     <title>MOFA</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Cormorant+Garamond:wght@600;700&family=Caveat:wght@600&family=Tajawal:wght@400;500;700&family=Amiri:wght@700&family=Aref+Ruqaa:wght@700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500;600&family=Cormorant+Garamond:wght@600;700&family=Caveat:wght@600&family=Tajawal:wght@400;500;700&display=swap">
     <style>
         @media only screen and (max-width: 620px) {
             .px { padding-left: 22px !important; padding-right: 22px !important; }

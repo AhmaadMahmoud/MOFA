@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Items\Schemas;
 
 use App\Enums\ItemBadge;
 use App\Filament\Resources\Ingredients\IngredientResource;
-use App\Models\Item;
 use App\Support\Money;
 use App\Support\Nutrition;
 use Filament\Forms\Components\FileUpload;
@@ -20,9 +19,7 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Str;
 
 class ItemForm
 {
@@ -55,13 +52,7 @@ class ItemForm
                             ->label(__('Name'))
                             ->required()
                             ->maxLength(255)
-                            ->extraInputAttributes(['dir' => 'ltr'])
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function (Get $get, Set $set, ?string $state, string $operation) {
-                                if ($operation === 'create' || blank($get('slug'))) {
-                                    $set('slug', Str::slug($state ?? ''));
-                                }
-                            }),
+                            ->extraInputAttributes(['dir' => 'ltr']),
                         TextInput::make('tagline_en')
                             ->label(__('Tagline'))
                             ->placeholder('Roast beef version')
@@ -157,7 +148,6 @@ class ItemForm
                     ->createOptionForm([
                         TextInput::make('name_en')->label(__('Name (English)'))->required()->extraInputAttributes(['dir' => 'ltr']),
                         TextInput::make('name_ar')->label(__('Name (Arabic)'))->required()->extraInputAttributes(['dir' => 'rtl']),
-                        TextInput::make('slug')->label(__('Link'))->required()->alphaDash()->unique('categories', 'slug')->extraInputAttributes(['dir' => 'ltr']),
                     ]),
                 TextInput::make('price')
                     ->label(__('Price'))
@@ -174,14 +164,6 @@ class ItemForm
                     ->placeholder(__('None')),
                 Toggle::make('is_active')->label(__('Shown on the site'))->default(true),
                 Toggle::make('is_featured')->label(__('Featured on the home page')),
-                TextInput::make('slug')
-                    ->label(__('Link'))
-                    ->prefix('/menu/')
-                    ->required()
-                    ->alphaDash()
-                    ->unique(Item::class, 'slug', ignoreRecord: true)
-                    ->maxLength(255)
-                    ->extraInputAttributes(['dir' => 'ltr']),
             ]);
     }
 

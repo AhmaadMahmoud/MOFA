@@ -131,7 +131,7 @@
     "item": "صنف",
     "ml": "مل",
     "pc": "قطعة",
-    ":count item|:count items": "{1} صنف واحد|{2} صنفين|[3,10] :count أصناف|[11,*] :count صنف",
+    ":count item|:count items": "{1} صنف واحد|{2} صنفان|[3,10] :count أصناف|[11,*] :count صنفًا",
     ":count order|:count orders": "{0} مفيش أوردرات|{1} أوردر واحد|{2} أوردرين|[3,10] :count أوردرات|[11,*] :count أوردر",
     ":count piece to bake|:count pieces to bake": "{0} مفيش حاجة تتخبز|{1} قطعة واحدة تتخبز|{2} قطعتين يتخبزوا|[3,10] :count قطع يتخبزوا|[11,*] :count قطعة تتخبز",
     "Account name": "اسم الحساب",
@@ -429,5 +429,8 @@
     "Earlier days": "الأيام اللي قبل",
     "Later days": "الأيام اللي بعد",
     "Delete": "حذف",
-    "It has orders: turn it off instead": "عليها أوردرات: اقفليها بدل ما تمسحيها"
+    "It has orders: turn it off instead": "عليها أوردرات: اقفليها بدل ما تمسحيها",
+    "Baked to order every morning. Order by :time and it reaches you tomorrow.": "يُخبز كل صباح حسب الطلب. اطلب قبل :time ويصلك في صباح اليوم التالي.",
+    "Order by :time": "اطلب قبل :time",
+    "Real sourdough, no shortcuts": "ساوردو حقيقي، دون اختصارات"
 }

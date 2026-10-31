@@ -16,7 +16,7 @@
     <div class="mx-auto grid max-w-(--container-site) items-center gap-8 px-5 pt-2 pb-12 lg:grid-cols-[1.15fr_1fr] lg:gap-12 lg:px-10 lg:pt-10 lg:pb-24">
         {{-- Copy --}}
         <div class="flex flex-col items-start gap-4 lg:gap-6">
-            <h1 id="hero-title" class="m-0 font-retro text-[3rem] leading-[0.95] font-normal tracking-[-0.01em] uppercase text-balance sm:text-7xl lg:text-[5.75rem] rtl:leading-[1.2] rtl:normal-case">
+            <h1 id="hero-title" class="m-0 font-retro text-[3rem] leading-[0.95] font-normal tracking-[-0.01em] uppercase text-balance sm:text-7xl lg:text-[5.75rem] rtl:leading-[1.2] rtl:font-extrabold rtl:normal-case">
                 {{ __('Your kind of morning.') }}
             </h1>
 
@@ -30,19 +30,14 @@
             </div>
         </div>
 
-        {{-- The arch --}}
+        {{-- Faten, cut out and standing straight on the page (the WebP is transparent; the JPG fallback is on cream). --}}
         <div class="relative mx-auto w-full max-w-[23rem] ps-[4.5rem] sm:max-w-[27rem] lg:max-w-[27rem] lg:ps-0">
             <figure class="relative m-0">
-                {{-- Outline arch, offset from the photo like a pencil line around it. --}}
-                <svg class="absolute -start-2.5 -top-3.5 z-10 h-[calc(100%+0.875rem)] w-[calc(100%+1.25rem)] overflow-visible" viewBox="0 0 300 404" preserveAspectRatio="none" aria-hidden="true">
-                    <path d="M10 404 V150 C10 70 70 10 150 10 C230 10 290 70 290 150 V404" fill="none" stroke="currentColor" stroke-width="1.5" vector-effect="non-scaling-stroke" class="text-brown" />
-                </svg>
-
                 <picture>
-                    <source srcset="{{ asset('images/hero/faten.webp') }}" type="image/webp">
-                    <img src="{{ asset('images/hero/faten.jpg') }}" alt="{{ __('Faten, the founder of MOFA') }}" width="540" height="840"
+                    <source srcset="{{ asset('images/hero/faten.webp') }}?v={{ @filemtime(public_path('images/hero/faten.webp')) }}" type="image/webp">
+                    <img src="{{ asset('images/hero/faten.jpg') }}?v={{ @filemtime(public_path('images/hero/faten.jpg')) }}" alt="{{ __('Faten, the founder of MOFA') }}" width="433" height="559"
                          fetchpriority="high" decoding="async"
-                         class="block aspect-[7/10] w-full rounded-t-full rounded-b-[1.125rem] object-cover object-[50%_12%]">
+                         class="block h-auto w-full">
                 </picture>
             </figure>
 

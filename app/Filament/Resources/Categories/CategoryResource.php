@@ -10,14 +10,11 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
 {
@@ -49,26 +46,12 @@ class CategoryResource extends Resource
                 ->label(__('Name (English)'))
                 ->required()
                 ->maxLength(255)
-                ->extraInputAttributes(['dir' => 'ltr'])
-                ->live(onBlur: true)
-                ->afterStateUpdated(function (Get $get, Set $set, ?string $state, string $operation) {
-                    if ($operation === 'create' || blank($get('slug'))) {
-                        $set('slug', Str::slug($state ?? ''));
-                    }
-                }),
+                ->extraInputAttributes(['dir' => 'ltr']),
             TextInput::make('name_ar')
                 ->label(__('Name (Arabic)'))
                 ->required()
                 ->maxLength(255)
                 ->extraInputAttributes(['dir' => 'rtl']),
-            TextInput::make('slug')
-                ->label(__('Link'))
-                ->helperText(__('Used in the menu link, e.g. /menu#sandwiches'))
-                ->required()
-                ->alphaDash()
-                ->unique(ignoreRecord: true)
-                ->maxLength(255)
-                ->extraInputAttributes(['dir' => 'ltr']),
             Toggle::make('is_active')
                 ->label(__('Shown on the site'))
                 ->default(true),
