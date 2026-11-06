@@ -17,7 +17,8 @@ use InvalidArgumentException;
 final class OrderPlacer
 {
     /**
-     * @param  array{name: string, phone: string, email: string}  $contact
+     * @param  array{name: string, phone: string, email?: ?string, birthday?: ?string}  $contact
+     * @param  array{lat: float, lng: float}|null  $pin  where the customer pinned their door on the map
      *
      * @throws SlotUnavailable when the day or slot filled up (or closed) since the customer chose it
      */
@@ -30,12 +31,13 @@ final class OrderPlacer
         ?string $address,
         ?string $notes,
         string $locale,
+        ?array $pin = null,
     ): Order {
         if ($cart->isEmpty()) {
             throw new InvalidArgumentException('The cart is empty.');
         }
 
-        $order = DB::transaction(function () use ($cart, $contact, $date, $slotId, $zoneId, $address, $notes, $locale) {
+        $order = DB::transaction(function () use ($cart, $contact, $date, $slotId, $zoneId, $address, $notes, $locale, $pin) {
             // Lock every slot row: placements queue up one at a time, so two
             // customers can never take the last place in a slot or a day together.
             $slots = DeliverySlot::query()->lockForUpdate()->get()->keyBy('id');
@@ -49,7 +51,10 @@ final class OrderPlacer
 
             $customer = Customer::query()->updateOrCreate(
                 ['phone' => Customer::normalizePhone($contact['phone'])],
-                ['name' => trim($contact['name']), 'email' => trim($contact['email']), 'locale' => $locale],
+                // A blank email keeps the one a returning customer gave before.
+                ['name' => trim($contact['name']), 'locale' => $locale] + (filled($contact['email'] ?? null) ? ['email' => trim($contact['email'])] : [])
+                    // Kept when they leave it empty next time.
+                    + (filled($contact['birthday'] ?? null) ? ['birthday' => $contact['birthday']] : []),
             );
 
             $subtotal = $cart->subtotal();
@@ -68,6 +73,8 @@ final class OrderPlacer
                 'zone_name_ar' => $zone->name_ar,
                 'is_pickup' => $zone->is_pickup,
                 'address' => $zone->is_pickup ? null : trim((string) $address),
+                'latitude' => $zone->is_pickup || ! $pin ? null : round($pin['lat'], 7),
+                'longitude' => $zone->is_pickup || ! $pin ? null : round($pin['lng'], 7),
                 'notes' => filled($notes) ? trim($notes) : null,
                 'subtotal' => $subtotal,
                 'delivery_fee' => $fee,

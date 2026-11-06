@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\URL;
 
 #[Fillable([
     'number', 'customer_id', 'status', 'delivery_date', 'delivery_slot_id', 'delivery_zone_id',
-    'slot_label_en', 'slot_label_ar', 'zone_name_en', 'zone_name_ar', 'is_pickup', 'address', 'notes',
+    'slot_label_en', 'slot_label_ar', 'zone_name_en', 'zone_name_ar', 'is_pickup', 'address', 'latitude', 'longitude', 'notes',
     'subtotal', 'delivery_fee', 'total', 'locale', 'expires_at', 'confirmed_at', 'cancelled_at', 'cancel_reason',
 ])]
 class Order extends Model
@@ -27,6 +27,8 @@ class Order extends Model
             'status' => OrderStatus::class,
             'delivery_date' => 'immutable_date',
             'is_pickup' => 'boolean',
+            'latitude' => 'float',
+            'longitude' => 'float',
             'subtotal' => 'integer',
             'delivery_fee' => 'integer',
             'total' => 'integer',
@@ -100,6 +102,26 @@ class Order extends Model
     public function zoneName(?string $locale = null): string
     {
         return ($locale ?? app()->getLocale()) === 'ar' ? $this->zone_name_ar : $this->zone_name_en;
+    }
+
+    public function hasPin(): bool
+    {
+        return $this->latitude !== null && $this->longitude !== null;
+    }
+
+    /** Google Maps at the customer's pin, or a search for the written address when there is no pin. */
+    public function mapsUrl(): ?string
+    {
+        if ($this->is_pickup) {
+            return null;
+        }
+        if ($this->hasPin()) {
+            return 'https://www.google.com/maps/search/?api=1&query='.$this->latitude.','.$this->longitude;
+        }
+
+        return $this->address
+            ? 'https://www.google.com/maps/search/?api=1&query='.rawurlencode($this->address.', '.$this->zone_name_en.', Egypt')
+            : null;
     }
 
     public function awaitsPayment(): bool

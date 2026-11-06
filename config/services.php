@@ -2,6 +2,12 @@
 
 return [
 
+    // Map tiles at checkout. With a key: CARTO's calm Voyager style. Without: OpenStreetMap's standard tiles.
+    'carto' => [
+        'key' => env('CARTO_API_KEY'),
+    ],
+
+
     /*
     |--------------------------------------------------------------------------
     | Third Party Services

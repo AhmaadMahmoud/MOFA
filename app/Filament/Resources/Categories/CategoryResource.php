@@ -7,11 +7,13 @@ use App\Models\Category;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
@@ -52,6 +54,15 @@ class CategoryResource extends Resource
                 ->required()
                 ->maxLength(255)
                 ->extraInputAttributes(['dir' => 'rtl']),
+            FileUpload::make('image')
+                ->label(__('Category photo'))
+                ->helperText(__('Shown on the home page. Leave it empty to use the photo of the first item in the category.'))
+                ->image()
+                ->maxSize(6 * 1024)
+                ->disk('public')
+                ->directory('categories')
+                ->imageEditor()
+                ->imageEditorAspectRatioOptions(['4:3', '1:1', null]),
             Toggle::make('is_active')
                 ->label(__('Shown on the site'))
                 ->default(true),
@@ -64,6 +75,8 @@ class CategoryResource extends Resource
             ->reorderable('sort_order')
             ->defaultSort('sort_order')
             ->columns([
+                ImageColumn::make('image')->label(__('Photo'))->disk('public')->square()->size(44)
+                    ->defaultImageUrl(fn (Category $record) => $record->coverUrl()),
                 TextColumn::make('name_en')->label(__('Name (English)'))->searchable()->weight('semibold'),
                 TextColumn::make('name_ar')->label(__('Name (Arabic)'))->searchable(),
                 TextColumn::make('items_count')->label(__('Items'))->counts('items')->badge(),

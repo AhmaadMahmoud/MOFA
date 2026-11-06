@@ -14,8 +14,13 @@ Route::prefix('{locale}')
     ->where(['locale' => implode('|', Locales::supported())])
     ->middleware('locale')
     ->group(function () {
+        // Home shows the categories; each opens the menu on that category.
         Route::get('/', fn () => view('pages.home', [
-            'featured' => \App\Models\Item::query()->active()->where('is_featured', true)->ordered()->limit(6)->get(),
+            'categories' => \App\Models\Category::query()->active()->ordered()
+                ->with(['activeItems' => fn ($query) => $query->ordered()])
+                ->get()
+                ->filter(fn ($category) => $category->activeItems->isNotEmpty())
+                ->values(),
         ]))->name('home');
 
         Route::get('/menu', [MenuController::class, 'index'])->name('menu');

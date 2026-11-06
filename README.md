@@ -1,30 +1,109 @@
-# MOFA — Made Of Faten
+<div align="center">
 
-Pre-order website for MOFA, sourdough & bagels. Arabic and English, mobile first.
+# MOFA — Made of Faten
 
-**Stack:** Laravel 13 · Livewire 4 · Filament 5 · Tailwind CSS 4 · Alpine.js · MySQL
+**A pre-order website for a home bakery that makes sourdough, bagels and layered sandwiches.**
+Customers order today for delivery tomorrow morning. The site is in Arabic and English and is built for phones first.
 
-## First-time setup
+![Laravel](https://img.shields.io/badge/Laravel-13-FF2D20?logo=laravel&logoColor=white)
+![Livewire](https://img.shields.io/badge/Livewire-4-4E56A6?logo=livewire&logoColor=white)
+![Filament](https://img.shields.io/badge/Filament-5-FDAE4B)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Alpine.js](https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white)
+![PHP](https://img.shields.io/badge/PHP-8.3%2B-777BB4?logo=php&logoColor=white)
 
-Requires PHP 8.3+ (8.4 recommended), Composer, Node 20+ and MySQL.
+</div>
+
+---
+
+## Contents
+
+- [Features](#features)
+- [How an order works](#how-an-order-works)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Configuration](#configuration)
+- [Running the shop](#running-the-shop)
+- [Tests](#tests)
+- [Project structure](#project-structure)
+- [Conventions](#conventions)
+
+## Features
+
+### Storefront
+- **Arabic and English** with full right-to-left layout. Every URL has a `/{locale}` prefix, and the site remembers the visitor's choice.
+- **Menu by category**, with a filter bar. Each item has its own page with a photo, ingredients and nutrition facts. Calories are calculated automatically from the macros.
+- **Notes under item photos.** These are short labels like "Suitable for diabetics", with brand colours, fonts and shapes chosen from the dashboard.
+- **Cart in the browser.** It keeps working across pages and gives feedback on every add: a small animation, a soft chime and a short vibration on phones.
+- **Three-step checkout** built with Livewire:
+  1. Contact details. Email and date of birth are optional.
+  2. Delivery area, address, and an optional pin on a map (Leaflet).
+  3. Delivery day and time slot.
+- **Private order page** behind a signed link. It refreshes itself while the order waits for payment.
+
+### Dashboard (`/admin`, Filament)
+- **Orders.** Confirm the payment, mark the order out for delivery or delivered, or cancel it.
+- **Prep list.** Everything to bake for a given day, with totals per item.
+- **Menu.** Categories with cover images, items and ingredients. Slugs are generated from the name.
+- **Delivery.** Delivery areas (with fees, or pickup), time slots with capacity, and closed days.
+- **Customers.** Order history, plus a 🎂 badge when a birthday falls this week.
+- **Settings.** Order cutoff time, InstaPay details and the WhatsApp number.
+- **Live alerts.** A notification bell for new orders, checked every 30 seconds.
+- **Look.** Uses the MOFA theme, works in English or Arabic, and Arabic text uses Tajawal.
+
+## How an order works
+
+```
+Customer places order ──► Pending payment ──► Faten confirms ──► Confirmed ──► Out for delivery ──► Delivered
+                              │                    │
+                              │                    └─► one email to the customer (if they gave an email)
+                              └─► pays with InstaPay, sends the receipt on WhatsApp
+```
+
+- **Payment** is a manual InstaPay transfer. The customer's order page has a WhatsApp button that opens a chat with the order number already written, so they can send the receipt.
+- **Confirmation** is done by Faten from the dashboard after she checks the receipt.
+- **Unpaid orders** are never cancelled automatically. Each one keeps its place in the day until it is confirmed or cancelled.
+- **Prices** are always recalculated on the server. The browser cart only stores item IDs and quantities.
+- **Email** is sent only once: when the order is confirmed. If the customer left the email blank, nothing is sent.
+
+## Tech stack
+
+| Layer | Choice |
+| --- | --- |
+| Backend | Laravel 13, PHP 8.3+ (8.4 recommended), MySQL |
+| Interactive pages | Livewire 4 (checkout, order page) |
+| Dashboard | Filament 5 |
+| Frontend | Tailwind CSS 4, Alpine.js, Vite |
+| Map | Leaflet with OpenStreetMap tiles (CARTO tiles when a key is set) |
+| Fonts | Self-hosted through `@fontsource`: Jost, Cormorant Garamond, Bagel Fat One and Caveat for English; Tajawal for Arabic |
+
+## Getting started
+
+**Requirements:** PHP 8.3+, Composer, Node 20+ and MySQL 8.
 
 ```bash
+git clone <repo-url> mofa && cd mofa
+
 composer install
 cp .env.example .env
 php artisan key:generate
 ```
 
-Create the database, then set the admin login in `.env`:
+Create the database:
 
 ```bash
 mysql -u root -e "CREATE DATABASE mofa CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 ```
+
+Set the first admin account in `.env`:
 
 ```dotenv
 ADMIN_NAME=Faten
 ADMIN_EMAIL=you@example.com
 ADMIN_PASSWORD=choose-a-strong-password
 ```
+
+Then migrate, link storage and build the assets:
 
 ```bash
 php artisan migrate --seed
@@ -34,16 +113,53 @@ npm run build
 php artisan serve
 ```
 
-Optional demo item (the Sunrise Roast from Instagram, price left at 0):
+| | URL |
+| --- | --- |
+| Site | http://localhost:8000 (redirects to `/ar` or `/en`) |
+| Dashboard | http://localhost:8000/admin |
+
+For live reload while you work, run `npm run dev` in a second terminal.
+
+To add a demo item (price left at 0):
 
 ```bash
 php artisan db:seed --class=MenuDemoSeeder
 ```
 
-- Site: http://localhost:8000 (redirects to `/ar` or `/en`)
-- Admin: http://localhost:8000/admin (English by default; switch to Arabic from the user menu)
+> **Using a phone's location on the map** needs HTTPS. With Laravel Valet, run `valet secure mofa`.
 
-For live reload while working: `npm run dev` in a second terminal.
+## Configuration
+
+| Variable | Purpose |
+| --- | --- |
+| `APP_URL` | Full site URL. Signed order links use it. |
+| `APP_TIMEZONE` | `Africa/Cairo`. Cutoff times and delivery days depend on it. |
+| `APP_LOCALE` | Default language for new visitors (`ar`) |
+| `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | The first dashboard account, created by the seeder |
+| `QUEUE_CONNECTION` | `database`. The confirmation email goes through the queue. |
+| `MAIL_*` | Mail server for the confirmation email. `MAIL_MAILER=log` writes the email to the log instead of sending it. |
+| `CARTO_API_KEY` | Optional. Switches the map to CARTO tiles; without it, OpenStreetMap is used. |
+
+Before taking the first order, fill in these dashboard screens:
+- **Delivery → Delivery areas:** at least one area.
+- **Delivery → Time slots:** two slots are created for you.
+- **Ordering & payment:** the InstaPay address and the WhatsApp number.
+
+Until these are filled in, the checkout shows "Online ordering opens soon".
+
+## Running the shop
+
+Keep a queue worker running so the confirmation email gets sent:
+
+```bash
+php artisan queue:work
+```
+
+In production, run the worker under Supervisor (or a similar process manager). There are no scheduled jobs.
+
+**Previewing the email.** In the local environment, open `/_mail/confirmed?locale=ar` (or `locale=en`). It renders the email for the latest order.
+
+**Payment receipts** stay in WhatsApp; the site does not store them.
 
 ## Tests
 
@@ -51,72 +167,42 @@ For live reload while working: `npm run dev` in a second terminal.
 php artisan test
 ```
 
-## How the project is organised
+The feature tests cover:
+- checkout (validation, server-side pricing, optional fields)
+- delivery scheduling (cutoff, closed days, slot capacity)
+- the order workflow and the confirmation email
+- dashboard alerts and order screens
+- the menu, locale routing, and nutrition calculation
 
-| Where | What |
+## Project structure
+
+| Path | What it holds |
 | --- | --- |
-| `resources/css/app.css` | Tailwind theme built from the MOFA design system: colors, fonts, radii, and the `btn`, `tag`, `brush`, `ornament` classes |
-| `resources/views/components/` | Blade components: `button`, `tag`, `ornament`, `section-title`, `wave-frame`, `flower`, and `mofa.icon` (not `x-icon`: Filament's blade-icons package owns that name) |
-| `resources/views/components/site/` | Header, footer, mobile bottom bar, and the hero |
-| `resources/views/components/layouts/app.blade.php` | The page layout: `lang` and `dir`, meta tags, hreflang |
-| `resources/views/pages/` | Page views |
-| `lang/ar.json` | Arabic translations. English text is the key |
-| `app/Support/Locales.php` | Supported locales, RTL, and the visitor's preferred language |
-| `app/Http/Middleware/SetLocale.php` | Applies the `/{locale}` prefix and remembers the choice |
-| `app/Providers/Filament/AdminPanelProvider.php` | The admin panel at `/admin`: MOFA theme, English by default, language switch |
-| `resources/css/filament/admin/theme.css` | The dashboard theme: fonts, surfaces and shapes from the design system |
-| `app/Filament/Resources/` | Dashboard screens: Categories, Items, Ingredients (the "Menu" group) |
-| `app/Models/` | `Category`, `Item`, `Ingredient`, `ItemIngredient` (an ingredient line with its amount) |
-| `app/Support/Nutrition.php` | Calories from protein × 4 + carbs × 4 + fat × 9 |
-| `app/Support/Money.php` | Prices are stored in piasters and shown in EGP |
+| `app/Ordering/` | `Cart` (server-side pricing), `OrderPlacer`, and `OrderWorkflow`, which handles every status change |
+| `app/Delivery/DeliveryScheduler.php` | Which days and slots can be booked: cutoff, days off, closed days, capacity |
+| `app/Payments/` | The `PaymentMethod` interface; `InstapayManual` is the first implementation |
+| `app/Notifications/` | The customer confirmation email and the dashboard alerts |
+| `app/Livewire/` | `Checkout` and `OrderPage` |
+| `app/Filament/` | Dashboard resources, pages (prep list, settings) and widgets |
+| `app/Support/` | `Locales`, `Money` (prices in piasters), `Nutrition`, `Settings`, `ItemNote`, `BrandPalette` |
+| `resources/views/components/` | Blade components; `site/` holds the header, footer, hero and story slider |
+| `resources/views/pages/` | Home, menu, item, checkout and order pages |
+| `resources/js/` | `cart.js` (browser cart), `location-picker.js` (map), `setup.js` (Alpine components) |
+| `resources/css/app.css` | Tailwind theme built from the MOFA design system |
+| `resources/css/filament/admin/theme.css` | Dashboard theme |
+| `lang/ar.json` | Arabic translations; the English text is the key |
 
 ## Conventions
 
-- **Mobile first.** Design every screen at 375px, then scale up with `sm:`/`lg:`.
-- **RTL.** Use logical utilities (`ms-`, `me-`, `ps-`, `pe-`, `start-`, `end-`), never `ml-`/`left-`. Anything that points along the reading direction gets `flip-rtl` or `rtl:-scale-x-100`.
-- **Latin inside Arabic.** Wrap handles, emails and codes in `<span dir="ltr">` so they never flip.
-- **Text colors.** Text is `brown` or `ink-muted` only. Terracotta, mauve and olive are decorative and never used for text on cream.
-- **Bilingual data.** Translated fields are two columns, `name_en` and `name_ar`; read them with `$model->localized('name')`.
-- **Calories are never typed in.** `Item` recalculates them from the macros on every save.
-- **Icons.** Use `<x-mofa.icon>`. `<x-icon>` belongs to Filament's blade-icons package.
-- **Fonts.** Self-hosted via `@fontsource`. English uses Jost (text), Cormorant Garamond (headings), Bagel Fat One (retro) and Caveat (script); all Arabic text, on the site and in the dashboard, uses Tajawal.
+- **Mobile first.** Design each screen at 375px wide, then add `sm:` and `lg:` styles for larger screens.
+- **RTL-safe utilities.** Use the logical ones (`ms-`, `pe-`, `start-`, `end-`), never `ml-` or `left-`. Anything that points along the reading direction gets `rtl:-scale-x-100`.
+- **Latin text inside Arabic.** Wrap phone numbers, emails and handles in `dir="ltr"` so they never flip.
+- **Formal Arabic.** All Arabic UI text and emails are written in Modern Standard Arabic.
+- **Bilingual data.** Each translated field is stored in two columns (`name_en`, `name_ar`) and read with `$model->localized('name')`.
+- **Money.** Prices are stored in piasters as integers and shown in EGP.
+- **Icons.** Use `<x-mofa.icon>`. The name `<x-icon>` belongs to Filament's blade-icons package.
+- **Text colours.** Text is `brown` or `ink-muted`. Terracotta, mauve and olive are for decoration only.
 
-## Placeholders to replace
+---
 
-- `public/images/hero/faten.*` — cropped from an Instagram post; replace with the original high-resolution portrait (portrait orientation, at least 1600px tall).
-- `public/images/brand/*` and `public/favicon.ico` — cut from a small PNG; replace with SVG or large transparent PNG exports.
-
-## Phases
-
-1. **Foundation** ← done: theme, components, layout, Arabic/English + RTL, home page with Hero A, admin panel.
-2. **Menu** ← done: categories, items, nutrition (calories automatic), ingredients, menu and item pages, dashboard screens and theme.
-3. **Cart and pre-ordering** ← done: browser cart, 3-step checkout (Livewire), `App\Delivery\DeliveryScheduler`, delivery areas, time slots, closed days, settings.
-4. **Orders and payments** ← done: InstaPay with receipt upload, signed order page, order screens, prep list, customers, dashboard widgets.
-5. **Notifications** ← done: customer emails (Arabic/English) and dashboard alerts. WhatsApp can be added later as a channel.
-6. Quality and launch.
-
-## Running the shop
-
-Besides `php artisan serve`, the queue worker sends the emails:
-
-```bash
-php artisan queue:work
-```
-
-On the server, run it with Supervisor. There are no scheduled jobs: unpaid orders are never cancelled automatically.
-
-**How payment works.** The customer transfers with InstaPay and sends the receipt on WhatsApp (the button on their order page opens the chat with the order number written). Faten checks it and presses **Confirm payment** on the order. An unpaid order holds its place in the day until she confirms or cancels it.
-
-Before the first order, fill in the dashboard: **Delivery → Delivery areas** (at least one), **Time slots** (two are created for you), and **Ordering & payment** (the InstaPay address or phone, and the WhatsApp number for receipts). Until then the checkout shows "Online ordering opens soon".
-
-| Where | What |
-| --- | --- |
-| `app/Delivery/DeliveryScheduler.php` | Which days and slots can be booked (cutoff, days off, closed days, capacity) |
-| `app/Ordering/` | `Cart` (server-side pricing), `OrderPlacer`, `OrderWorkflow` (every status change) |
-| `app/Payments/` | `PaymentMethod` interface; `InstapayManual` is the first one |
-| `app/Notifications/` | Customer emails and dashboard alerts |
-| `app/Support/Settings.php` | Shop settings with their defaults |
-| `resources/js/cart.js` | The browser cart (localStorage) |
-| `resources/js/app.js` / `livewire.js` | Plain pages load Alpine alone; checkout and order pages load Livewire's bundle |
-
-Payment receipts are stored on the private `local` disk and only shown to signed-in admins.
+<p align="center">Baked fresh by Faten · <a href="https://www.instagram.com/mofa20261/">@mofa20261</a></p>

@@ -50,8 +50,9 @@
             <button type="button" x-data @click="$store.cart.open = true"
                     class="relative flex size-11 items-center justify-center rounded-pill text-brown transition-colors hover:text-ink-muted"
                     :aria-label="@js(__('Your order')) + ($store.cart.count ? ' (' + $store.cart.count + ')' : '')" aria-label="{{ __('Your order') }}">
-                <x-mofa.icon name="bag" />
-                <span x-cloak x-show="$store.cart.count > 0" x-text="$store.cart.count"
+                {{-- Sways gently while there is something in the order; swings when something is added. --}}
+                <span class="flex" :class="$store.cart.count > 0 && 'mofa-bag-idle'"><span class="flex" x-effect="$store.cart.bump && ($el.classList.remove('mofa-bump'), void $el.offsetWidth, $el.classList.add('mofa-bump'))"><x-mofa.icon name="bag" /></span></span>
+                <span x-cloak x-show="$store.cart.count > 0" x-text="$store.cart.count" x-effect="$store.cart.bump && ($el.classList.remove('mofa-pop'), void $el.offsetWidth, $el.classList.add('mofa-pop'))"
                       class="absolute end-0.5 top-0.5 flex h-5 min-w-5 items-center justify-center rounded-pill bg-terracotta px-1 text-[0.6875rem] leading-none font-semibold text-on-terracotta"></span>
             </button>
 

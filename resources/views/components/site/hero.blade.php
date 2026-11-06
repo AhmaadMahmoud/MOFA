@@ -4,15 +4,6 @@
     Desktop: copy at the start, arch at the end (mirrors in Arabic).
 --}}
 <section class="relative isolate overflow-hidden" aria-labelledby="hero-title">
-    {{-- Corner waves, like the posts. --}}
-    <svg class="pointer-events-none absolute end-0 top-0 -z-10 h-28 w-16 lg:h-80 lg:w-52 rtl:-scale-x-100" viewBox="0 0 110 150" preserveAspectRatio="none" aria-hidden="true">
-        <path class="fill-olive" d="M110 0 V150 C70 140 50 110 38 72 C28 40 16 16 0 0 Z" />
-    </svg>
-    <svg class="pointer-events-none absolute start-0 bottom-36 -z-10 h-44 w-24 lg:bottom-0 lg:h-72 lg:w-56 rtl:-scale-x-100" viewBox="0 0 150 224" preserveAspectRatio="none" aria-hidden="true">
-        <path class="fill-terracotta" d="M0 0 C40 -20 60 20 70 70 C80 120 110 170 150 224 H0 Z" />
-        <path class="fill-mauve" d="M0 80 C26 80 38 120 46 160 C54 192 70 212 90 224 H0 Z" />
-    </svg>
-
     <div class="mx-auto grid max-w-(--container-site) items-center gap-8 px-5 pt-2 pb-12 lg:grid-cols-[1.15fr_1fr] lg:gap-12 lg:px-10 lg:pt-10 lg:pb-24">
         {{-- Copy --}}
         <div class="flex flex-col items-start gap-4 lg:gap-6">
@@ -48,7 +39,7 @@
                     <path d="M6 4 C10 30 30 46 62 48" /><path d="M52 40 L63 48 L52 55" />
                 </svg>
             </div>
-            <x-flower class="absolute hidden text-terracotta lg:-start-24 lg:bottom-16 lg:block" />
+            <x-flower class="mofa-flower-spin absolute hidden text-terracotta lg:-start-24 lg:bottom-16 lg:block" />
         </div>
 
         <p class="m-0 text-base leading-relaxed text-ink-muted lg:hidden">

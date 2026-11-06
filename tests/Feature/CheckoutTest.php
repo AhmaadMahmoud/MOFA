@@ -59,6 +59,37 @@ class CheckoutTest extends TestCase
             ->assertSet('step', 3);
     }
 
+    public function test_the_email_is_optional(): void
+    {
+        Notification::fake();
+
+        Livewire::test(Checkout::class)
+            ->call('loadCart', [$this->bagel->id => 1])
+            ->set('name', 'Mona Adel')->set('phone', '01012345678')->set('email', '')
+            ->call('next')->assertHasNoErrors()
+            ->set('zoneId', $this->zone->id)->set('address', '12 Shagaret El Dor, Zamalek')
+            ->call('next')->assertHasNoErrors()
+            ->call('place')->assertHasNoErrors()->assertRedirect();
+
+        $this->assertNull(Order::query()->sole()->customer->email);
+    }
+
+    public function test_a_blank_email_keeps_the_one_given_before(): void
+    {
+        Notification::fake();
+        $this->filled()->call('place')->assertRedirect();
+
+        Livewire::test(Checkout::class)
+            ->call('loadCart', [$this->bagel->id => 1])
+            ->set('name', 'Mona Adel')->set('phone', '01012345678')->set('email', '')
+            ->call('next')
+            ->set('zoneId', $this->zone->id)->set('address', '12 Shagaret El Dor, Zamalek')
+            ->call('next')
+            ->call('place')->assertHasNoErrors();
+
+        $this->assertSame('mona@example.com', \App\Models\Customer::query()->sole()->email);
+    }
+
     public function test_the_checkout_page_loads_in_both_languages(): void
     {
         $this->get('/en/checkout')->assertOk()->assertSee('noindex', false);
@@ -145,6 +176,44 @@ class CheckoutTest extends TestCase
 
         $base->set('zoneId', $this->zone->id)->set('address', '')->call('next')->assertHasErrors('address');
         $base->set('zoneId', $pickup->id)->call('next')->assertHasNoErrors()->assertSet('step', 3);
+    }
+
+    public function test_the_pinned_location_is_saved_with_the_order(): void
+    {
+        Notification::fake();
+
+        $this->filled()->set('lat', 30.0626)->set('lng', 31.2197)->call('place')->assertHasNoErrors();
+
+        $order = Order::query()->sole();
+        $this->assertSame(30.0626, $order->latitude);
+        $this->assertSame(31.2197, $order->longitude);
+        $this->assertStringContainsString('query=30.0626,31.2197', $order->mapsUrl());
+    }
+
+    public function test_the_map_is_optional_but_a_pin_must_be_in_egypt(): void
+    {
+        Notification::fake();
+
+        $this->filled()->set('lat', 48.85)->set('lng', 2.35)->call('place')->assertHasErrors(['lat', 'lng']);
+        $this->assertSame(0, Order::query()->count());
+
+        $this->filled()->call('place')->assertHasNoErrors();
+        $this->assertNull(Order::query()->sole()->latitude);
+    }
+
+    public function test_the_date_of_birth_is_optional_and_kept_on_the_customer(): void
+    {
+        Notification::fake();
+
+        $this->filled()->set('birthday', '2030-01-01')->call('place')->assertHasErrors('birthday');
+
+        $this->filled()->set('birthday', '1994-03-18')->call('place')->assertHasNoErrors();
+        $customer = Order::query()->sole()->customer;
+        $this->assertSame('1994-03-18', $customer->birthday->toDateString());
+
+        // Ordering again without it keeps the one we have.
+        $this->filled()->call('place')->assertHasNoErrors();
+        $this->assertSame('1994-03-18', $customer->fresh()->birthday->toDateString());
     }
 
     public function test_a_slot_that_fills_up_meanwhile_sends_the_customer_back(): void

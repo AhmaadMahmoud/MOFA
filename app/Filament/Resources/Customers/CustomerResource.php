@@ -10,6 +10,7 @@ use App\Support\Money;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -45,7 +46,8 @@ class CustomerResource extends Resource
     {
         return $schema->components([
             TextInput::make('name')->label(__('Name'))->required()->maxLength(255),
-            TextInput::make('email')->label(__('Email'))->email()->required()->maxLength(255)->extraInputAttributes(['dir' => 'ltr']),
+            TextInput::make('email')->label(__('Email'))->email()->maxLength(255)->extraInputAttributes(['dir' => 'ltr']),
+            DatePicker::make('birthday')->label(__('Date of birth'))->native(false)->displayFormat('j M Y')->maxDate(now()),
         ])->columns(1);
     }
 
@@ -63,6 +65,8 @@ class CustomerResource extends Resource
                 TextColumn::make('name')->label(__('Name'))->searchable()->weight('semibold'),
                 TextColumn::make('phone')->label(__('Phone'))->searchable()->copyable()->extraAttributes(['dir' => 'ltr']),
                 TextColumn::make('email')->label(__('Email'))->searchable()->toggleable()->extraAttributes(['dir' => 'ltr']),
+                TextColumn::make('birthday')->label(__('Date of birth'))->date('j M Y')->sortable()->placeholder('—')
+                    ->description(fn (Customer $record) => $record->birthdaySoon() ? '🎂 '.__('Birthday this week') : null),
                 TextColumn::make('paid_orders_count')->label(__('Paid orders'))->badge()->sortable(),
                 TextColumn::make('paid_total')->label(__('Spent'))->formatStateUsing(fn ($state) => Money::format((int) $state))->sortable(),
                 TextColumn::make('last_order_at')->label(__('Last order'))->since()->sortable(),

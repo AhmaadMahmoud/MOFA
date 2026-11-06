@@ -7,8 +7,11 @@
         <div class="mofa-order-address">
             <p dir="auto">{{ $order->address }}</p>
             <p class="mofa-order-sub">{{ $order->zoneName() }}</p>
-            <a href="https://www.google.com/maps/search/?api=1&query={{ rawurlencode($order->address.', '.$order->zone_name_en.', Egypt') }}" target="_blank" rel="noopener" class="mofa-link">
-                {{ __('Open in Maps') }}
+            @if ($order->hasPin())
+                <p class="mofa-order-sub">{{ __('The customer pinned the door on the map.') }}</p>
+            @endif
+            <a href="{{ $order->mapsUrl() }}" target="_blank" rel="noopener" class="mofa-link">
+                {{ $order->hasPin() ? __('Open the pin in Maps') : __('Open in Maps') }}
             </a>
         </div>
     @endif

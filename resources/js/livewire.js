@@ -5,6 +5,8 @@
  */
 import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
 import { registerMofa } from './setup';
+import { locationPicker } from './location-picker';
 
 registerMofa(Alpine);
+Alpine.data('locationPicker', locationPicker);
 Livewire.start();

@@ -75,12 +75,43 @@ class MenuTest extends TestCase
         $this->get('/en/menu/gone')->assertNotFound();
     }
 
-    public function test_home_shows_featured_items(): void
+    public function test_home_shows_the_categories_linking_into_the_menu(): void
     {
-        Item::factory()->create(['name_en' => 'Bagel Box', 'is_featured' => true]);
-        Item::factory()->create(['name_en' => 'Plain Toast', 'is_featured' => false]);
+        $bagels = Category::factory()->create(['name_en' => 'Bagels', 'slug' => 'bagels']);
+        Item::factory()->count(2)->create(['category_id' => $bagels->id]);
+        Category::factory()->create(['name_en' => 'Empty Shelf']);
 
-        $this->get('/en')->assertOk()->assertSee('Bagel Box')->assertDontSee('Plain Toast');
+        $this->get('/en')->assertOk()
+            ->assertSee('Bagels')
+            ->assertSee('2 items')
+            ->assertSee('/en/menu#bagels', false)
+            ->assertDontSee('Empty Shelf');
+    }
+
+    public function test_a_category_photo_from_the_dashboard_replaces_the_first_items_photo(): void
+    {
+        $bagels = Category::factory()->create(['name_en' => 'Bagels']);
+        Item::factory()->create(['category_id' => $bagels->id, 'images' => ['items/first.jpg']]);
+
+        $this->assertStringContainsString('items/first.jpg', $bagels->coverUrl());
+
+        $bagels->update(['image' => 'categories/bagels.jpg']);
+        $this->assertStringContainsString('categories/bagels.jpg', $bagels->fresh()->coverUrl());
+        $this->get('/en')->assertSee('categories/bagels.jpg', false);
+    }
+
+    public function test_notes_show_under_the_photo_in_the_chosen_look(): void
+    {
+        Item::factory()->create(['slug' => 'fresh-start', 'notes' => [
+            ['text_en' => 'Suitable for diabetics', 'text_ar' => 'مناسب لمرضى السكري', 'font' => 'retro', 'color' => 'paper', 'background' => 'olive', 'shape' => 'pill'],
+            ['text_en' => '', 'text_ar' => ''],
+        ]]);
+
+        $this->get('/en/menu/fresh-start')->assertOk()
+            ->assertSee('Suitable for diabetics')
+            ->assertSee('mofa-note--pill mofa-note--retro', false)
+            ->assertSee('--note-bg: #786b49', false);
+        $this->get('/ar/menu/fresh-start')->assertSee('مناسب لمرضى السكري');
     }
 
     public function test_the_demo_shop_seeder_fills_the_menu_with_photos(): void

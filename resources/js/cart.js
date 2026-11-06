@@ -5,6 +5,36 @@
 const KEY = 'mofa_cart_v1';
 const MAX_QTY = 20;
 
+/*
+ * A small "it's in" moment when something is added: the bag bumps (CSS, via `bump`),
+ * a short soft chime, and a tiny buzz on phones that allow it (Android).
+ * Turn the sound off by setting SOUND to false.
+ */
+const SOUND = true;
+let audio = null;
+const chime = () => {
+    if (!SOUND) return;
+    try {
+        audio ??= new (window.AudioContext || window.webkitAudioContext)();
+        const t = audio.currentTime;
+        // Two quick bell-like notes (E6, then A6), quiet and short.
+        [[1318.5, 0], [1760, 0.07]].forEach(([freq, delay]) => {
+            const osc = audio.createOscillator();
+            const gain = audio.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.0001, t + delay);
+            gain.gain.exponentialRampToValueAtTime(0.07, t + delay + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.35);
+            osc.connect(gain).connect(audio.destination);
+            osc.start(t + delay);
+            osc.stop(t + delay + 0.4);
+        });
+    } catch {
+        // No audio: the visual bump is enough.
+    }
+};
+
 const read = () => {
     try {
         const data = JSON.parse(window.localStorage.getItem(KEY) || '{}');
@@ -26,6 +56,8 @@ export const formatMoney = (piasters) => {
 export const cartStore = {
     lines: {},
     open: false,
+    /** Goes up on every add; the bag and the bottom bar watch it to bump. */
+    bump: 0,
     toast: null,
     _toastTimer: null,
 
@@ -63,6 +95,12 @@ export const cartStore = {
         this.lines = { ...this.lines, [product.id]: { ...product, qty: Math.min(MAX_QTY, current + qty) } };
         this.save();
         this.flash(product);
+        this.celebrate();
+    },
+    celebrate() {
+        this.bump++;
+        chime();
+        navigator.vibrate?.(12);
     },
     set(id, qty) {
         qty = Math.max(0, Math.min(MAX_QTY, Number(qty) || 0));
@@ -74,7 +112,9 @@ export const cartStore = {
         this.save();
     },
     inc(id) {
-        this.set(id, this.qty(id) + 1);
+        const before = this.qty(id);
+        this.set(id, before + 1);
+        if (this.qty(id) > before) this.celebrate();
     },
     dec(id) {
         this.set(id, this.qty(id) - 1);

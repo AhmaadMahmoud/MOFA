@@ -49,6 +49,17 @@ class OrderWorkflowTest extends TestCase
         Notification::assertSentTo($order->customer, OrderConfirmed::class);
     }
 
+    public function test_a_customer_without_an_email_gets_no_email(): void
+    {
+        $order = Order::factory()->status(OrderStatus::PendingPayment)->withPayment()->create();
+        $order->customer->update(['email' => null]);
+
+        $this->workflow->confirmPayment($order, $this->faten);
+
+        $this->assertSame(OrderStatus::Confirmed, $order->fresh()->status);
+        Notification::assertNothingSent();
+    }
+
     public function test_a_late_payment_can_still_be_confirmed(): void
     {
         $order = Order::factory()->status(OrderStatus::Expired)->withPayment()->create();

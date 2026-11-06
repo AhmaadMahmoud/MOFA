@@ -15,39 +15,27 @@
         </ul>
     </section>
 
-    {{-- Featured items, chosen in the dashboard. --}}
-    @if (($featured ?? collect())->isNotEmpty())
-        <section class="mx-auto max-w-(--container-site) px-4 pt-16 lg:px-10 lg:pt-24" aria-labelledby="featured-title">
+    {{-- The MOFA story: slides that move by themselves --}}
+    <x-site.story-slider />
+
+    {{-- The categories: each card opens the menu filtered to it. --}}
+    @if (($categories ?? collect())->isNotEmpty())
+        <section class="mx-auto max-w-(--container-site) px-4 pb-16 lg:px-10 lg:pb-24" aria-labelledby="categories-title">
             <div class="mb-8 flex flex-wrap items-end justify-between gap-4">
                 <x-section-title :script="__('Fresh every morning')">
-                    <span id="featured-title">{{ __('From the menu') }}</span>
+                    <span id="categories-title">{{ __('From the menu') }}</span>
                 </x-section-title>
                 <a href="{{ route('menu') }}" class="inline-flex min-h-11 items-center gap-2 font-medium text-brown underline-offset-4 hover:underline">
                     {{ __('See the full menu') }} <x-mofa.icon name="arrow" :size="18" class="flip-rtl" />
                 </a>
             </div>
-            <div class="grid gap-3 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
-                @foreach ($featured as $item)
-                    <x-menu.item-card :item="$item" />
+            <div @class(['grid gap-4 lg:gap-6', 'sm:grid-cols-2' => $categories->count() > 1, 'lg:grid-cols-3' => $categories->count() > 2])>
+                @foreach ($categories as $category)
+                    <x-menu.category-card :category="$category" />
                 @endforeach
             </div>
         </section>
     @endif
-
-    {{-- Story teaser --}}
-    <section id="story" class="mx-auto max-w-(--container-site) scroll-mt-6 px-4 py-16 lg:px-10 lg:py-24">
-        <x-wave-frame>
-            <div class="mx-auto flex max-w-[38rem] flex-col items-center gap-6 text-center">
-                <x-section-title :script="__('Let me take you back a little…')" retro align="center" class="[&_h2]:text-[2.25rem] sm:[&_h2]:text-[3.25rem]">
-                    {{ __('What does MOFA even mean?') }}
-                </x-section-title>
-                <x-ornament />
-                <p class="m-0 text-lg leading-relaxed">
-                    {{ __('MOFA stands for Made Of Faten. Sourdough, bagels and layered sandwiches, made with real ingredients, no hydrogenated oils, and a lot of care.') }}
-                </p>
-            </div>
-        </x-wave-frame>
-    </section>
 
     {{-- How ordering works --}}
     <section id="how-to-order" class="scroll-mt-6 bg-paper py-16 lg:py-24" aria-labelledby="how-title">

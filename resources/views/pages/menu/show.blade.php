@@ -16,15 +16,6 @@
 @endphp
 <x-layouts.app :title="$name" :description="$description">
     <article class="relative isolate overflow-hidden">
-        {{-- Corner waves, as on the posts. --}}
-        <svg class="pointer-events-none absolute end-0 top-0 -z-10 h-28 w-12 lg:h-80 lg:w-28 xl:w-40 rtl:-scale-x-100" viewBox="0 0 110 150" preserveAspectRatio="none" aria-hidden="true">
-            <path class="fill-olive" d="M110 0 V150 C70 140 50 110 38 72 C28 40 16 16 0 0 Z" />
-        </svg>
-        <svg class="pointer-events-none absolute start-0 bottom-0 -z-10 hidden h-72 w-40 lg:block rtl:-scale-x-100" viewBox="0 0 150 224" preserveAspectRatio="none" aria-hidden="true">
-            <path class="fill-terracotta" d="M0 0 C40 -20 60 20 70 70 C80 120 110 170 150 224 H0 Z" />
-            <path class="fill-mauve" d="M0 80 C26 80 38 120 46 160 C54 192 70 212 90 224 H0 Z" />
-        </svg>
-
         {{-- One screen: the header plus this block fill the viewport (with the bottom bar on phones). --}}
         <div class="mx-auto flex max-w-(--container-site) flex-col px-5 pb-4 lg:min-h-[calc(100dvh-6rem)] lg:justify-center lg:px-10 lg:pb-10">
             <a href="{{ route('menu') }}#{{ $item->category->slug }}" class="inline-flex min-h-10 items-center gap-2 self-start text-sm text-ink-muted no-underline hover:text-brown short:hidden">
@@ -36,18 +27,19 @@
                 {{-- ---------- The photo ---------- --}}
                 <div x-data="{ i: 0, go(n) { this.i = n; $refs.track.scrollTo({ left: n * $refs.track.clientWidth * (document.dir === 'rtl' ? -1 : 1), behavior: 'smooth' }) } }"
                      class="relative">
-                    <figure class="relative m-0">
-                        <div class="overflow-hidden rounded-md bg-paper">
+                    {{-- The same paper frame as the category cards on the home page. --}}
+                    <figure class="relative m-0 rounded-[1.625rem] bg-paper p-1 shadow-[0_1px_0_rgb(75_44_22/0.06),0_10px_30px_-18px_rgb(75_44_22/0.45)] sm:p-1.5">
+                        <div class="overflow-hidden rounded-[1.375rem] bg-cream">
                             @if ($images)
                                 <div x-ref="track" @scroll.debounce.60ms="i = Math.round(Math.abs($el.scrollLeft) / $el.clientWidth)"
-                                     class="flex aspect-[2/1] short:aspect-[5/2] sm:aspect-[16/10] snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] lg:aspect-[4/3] [&::-webkit-scrollbar]:hidden">
+                                     class="flex aspect-[3/2] snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] lg:aspect-[4/3] [&::-webkit-scrollbar]:hidden">
                                     @foreach ($images as $n => $src)
                                         <img src="{{ $src }}" alt="{{ $n === 0 ? $name : '' }}" @if ($n > 0) loading="lazy" @else fetchpriority="high" @endif decoding="async"
                                              class="size-full shrink-0 snap-center object-cover">
                                     @endforeach
                                 </div>
                             @else
-                                <div class="flex aspect-[2/1] short:aspect-[5/2] sm:aspect-[16/10] items-center justify-center lg:aspect-[4/3]" aria-hidden="true">
+                                <div class="flex aspect-[3/2] items-center justify-center lg:aspect-[4/3]" aria-hidden="true">
                                     <img src="{{ asset('images/brand/mofa-header-logo.png') }}" alt="" class="h-16 w-auto opacity-40">
                                 </div>
                             @endif
@@ -70,6 +62,17 @@
                             </div>
                         @endif
                     </figure>
+
+                    @php($notes = collect($item->notes ?? [])->filter(fn ($note) => filled(\App\Support\ItemNote::text($note))))
+                    @if ($notes->isNotEmpty())
+                        {{-- Faten's notes ("Suitable for diabetics"), in the colours she picked --}}
+                        <ul class="m-0 mt-3 flex list-none flex-wrap items-center justify-center gap-x-6 gap-y-2 p-0 px-2 text-center lg:mt-5 lg:gap-y-3">
+                            @foreach ($notes as $note)
+                                @php($look = \App\Support\ItemNote::look($note))
+                                <li><span class="{{ $look['class'] }}" style="{{ $look['style'] }}">{{ \App\Support\ItemNote::text($note) }}</span></li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
 
                 {{-- ---------- The words ---------- --}}
@@ -101,7 +104,7 @@
                 {{-- Swipe on phones, a grid from lg up. --}}
                 <div class="flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-px-5 px-5 pb-2 [scrollbar-width:none] lg:grid lg:grid-cols-3 lg:gap-5 lg:overflow-visible lg:px-0 [&::-webkit-scrollbar]:hidden">
                     @foreach ($more as $other)
-                        <x-menu.item-card :item="$other" class="w-[82%] shrink-0 snap-start bg-cream sm:w-[46%] lg:w-auto" />
+                        <x-menu.item-card :item="$other" inverse class="w-[82%] shrink-0 snap-start sm:w-[46%] lg:w-auto" />
                     @endforeach
                 </div>
             </div>

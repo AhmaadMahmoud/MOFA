@@ -13,6 +13,8 @@
 @import '@fontsource/tajawal/arabic-400.css';
 @import '@fontsource/tajawal/arabic-500.css';
 @import '@fontsource/tajawal/arabic-700.css';
+@import '@fontsource/caveat/latin-700.css';
+@import '@fontsource/bagel-fat-one/latin-400.css';
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
@@ -904,4 +906,31 @@
 .mofa-order-wa p {
     margin: 0;
     font-size: 0.875rem;
+}
+
+/* ---------- Item notes under the photo (App\Support\ItemNote), shared with the dashboard preview ---------- */
+.mofa-note {
+    position: relative; isolation: isolate; display: inline-block;
+    color: var(--note-color); line-height: 1.2;
+}
+.mofa-note--script { font-family: 'Caveat', 'Tajawal', cursive; font-weight: 700; font-size: 1.5rem; }
+.mofa-note--retro { font-family: 'Bagel Fat One', 'Tajawal', serif; font-size: 1.125rem; letter-spacing: .01em; }
+.mofa-note--serif { font-family: 'Cormorant Garamond', 'Tajawal', serif; font-weight: 700; font-size: 1.25rem; }
+.mofa-note--sans { font-family: 'Jost', 'Tajawal', sans-serif; font-weight: 600; font-size: 1rem; }
+:lang(ar) .mofa-note--script, :lang(ar) .mofa-note--retro, [dir='rtl'] .mofa-note--script { font-weight: 700; font-size: 1.25rem; }
+.mofa-note--brush { padding: 0 .5rem; }
+.mofa-note--brush::before {
+    content: ''; position: absolute; z-index: -1;
+    inset-inline: -.375rem -.625rem; top: 42%; bottom: 4%;
+    background: var(--note-bg); opacity: .6;
+    border-radius: 40% 60% 55% 45% / 60% 40% 60% 40%;
+    transform: skewX(-12deg);
+}
+.mofa-note--pill { padding: .375rem .9rem; border-radius: 999px; background: var(--note-bg); }
+.mofa-note--pill.mofa-note--script { padding-block: .125rem; }
+.mofa-note-preview { padding: 1rem 1.25rem; border-radius: .75rem; background: #e0c3a4; }
+
+.mofa-order-birthday {
+    color: var(--mofa-terracotta);
+    font-weight: 600;
 }

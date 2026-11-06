@@ -35,8 +35,10 @@ final class OrderWorkflow
             $order->update(['status' => OrderStatus::Confirmed, 'confirmed_at' => now()]);
         });
 
-        // The only email the customer gets: their order is confirmed.
-        $order->customer->notify(new OrderConfirmed($order));
+        // The only email the customer gets: their order is confirmed (the email is optional at checkout).
+        if (filled($order->customer->email)) {
+            $order->customer->notify(new OrderConfirmed($order));
+        }
     }
 
     public function markOutForDelivery(Order $order): void

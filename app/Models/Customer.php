@@ -9,10 +9,30 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\Notifiable;
 
 /** A guest who ordered. Phone is the identity: the same phone is the same customer. */
-#[Fillable(['name', 'phone', 'email', 'locale'])]
+#[Fillable(['name', 'phone', 'email', 'birthday', 'locale'])]
 class Customer extends Model
 {
     use HasFactory, Notifiable;
+
+    protected function casts(): array
+    {
+        return ['birthday' => 'immutable_date'];
+    }
+
+    /** True when the birthday falls within the next $days days (today included). */
+    public function birthdaySoon(int $days = 7): bool
+    {
+        if (! $this->birthday) {
+            return false;
+        }
+        $today = now('Africa/Cairo')->startOfDay();
+        $next = $this->birthday->setYear($today->year);
+        if ($next->lt($today)) {
+            $next = $next->addYear();
+        }
+
+        return $today->diffInDays($next) <= $days;
+    }
 
     public function orders(): HasMany
     {

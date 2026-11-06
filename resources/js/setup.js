@@ -84,9 +84,66 @@ const copy = (value) => ({
     },
 });
 
+/**
+ * The story slider on the home page: moves by itself, pauses while the visitor
+ * hovers, focuses or the tab is hidden, swipes on phones, and never autoplays
+ * for people who ask for reduced motion.
+ */
+const storySlider = (count, seconds = 7) => ({
+    active: 0,
+    paused: false,
+    hovering: false,
+    progress: 0,
+    reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    startX: null,
+
+    init() {
+        if (this.reduced) this.paused = true;
+        let last = performance.now();
+        const tick = (now) => {
+            const dt = now - last;
+            last = now;
+            if (!this.paused && !this.hovering && !document.hidden) {
+                this.progress += dt / (seconds * 1000);
+                if (this.progress >= 1) this.go(this.active + 1);
+            }
+            this.frame = requestAnimationFrame(tick);
+        };
+        this.frame = requestAnimationFrame(tick);
+    },
+
+    destroy() {
+        cancelAnimationFrame(this.frame);
+    },
+
+    go(n) {
+        this.active = (n + count) % count;
+        this.progress = 0;
+    },
+
+    next() { this.go(this.active + 1); },
+    prev() { this.go(this.active - 1); },
+
+    toggle() {
+        this.paused = !this.paused;
+    },
+
+    // Swipe: follows the reading direction (in Arabic, swiping right goes forward).
+    touchStart(e) { this.startX = e.touches[0].clientX; },
+    touchEnd(e) {
+        if (this.startX === null) return;
+        const dx = e.changedTouches[0].clientX - this.startX;
+        this.startX = null;
+        if (Math.abs(dx) < 40) return;
+        const forward = document.dir === 'rtl' ? dx > 0 : dx < 0;
+        forward ? this.next() : this.prev();
+    },
+});
+
 export function registerMofa(Alpine) {
     Alpine.store('cart', cartStore);
     Alpine.data('menuFilter', menuFilter);
+    Alpine.data('storySlider', storySlider);
     Alpine.data('countdown', countdown);
     Alpine.data('copy', copy);
 }

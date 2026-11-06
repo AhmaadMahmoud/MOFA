@@ -99,7 +99,7 @@
                                 </div>
 
                                 <div class="field">
-                                    <label for="email" class="field-label">{{ __('Email') }}</label>
+                                    <label for="email" class="field-label">{{ __('Email') }} <span class="font-normal text-ink-muted">({{ __('optional') }})</span></label>
                                     <input id="email" type="email" inputmode="email" dir="ltr" wire:model.blur="email" autocomplete="email" placeholder="name@example.com" class="field-input text-start rtl:text-end" @error('email') aria-invalid="true" aria-describedby="email-error" @enderror>
                                     @error('email')
                                         <p id="email-error" class="field-error"><x-mofa.icon name="alert" :size="16" /> {{ $message }}</p>
@@ -108,6 +108,61 @@
                                     @enderror
                                 </div>
                             </div>
+
+                            {{-- Date of birth: day / month / year in our own fields (a calendar is slow for birthdays). --}}
+                            @php
+                                $months = collect(range(1, 12))->mapWithKeys(fn ($m) => [$m => \Illuminate\Support\Carbon::create(2000, $m, 1)->locale($locale)->translatedFormat('F')]);
+                                $thisYear = (int) now('Africa/Cairo')->year;
+                            @endphp
+                            <fieldset class="field m-0 border-0 p-0"
+                                      x-data="{
+                                          d: '', m: '', y: '',
+                                          init() {
+                                              const v = $wire.birthday;
+                                              if (v) { [this.y, this.m, this.d] = v.split('-').map(n => String(+n)); }
+                                          },
+                                          days() { return this.y && this.m ? new Date(+this.y, +this.m, 0).getDate() : 31; },
+                                          sync() {
+                                              if (+this.d > this.days()) this.d = String(this.days());
+                                              $wire.birthday = this.d && this.m && this.y
+                                                  ? `${this.y}-${String(this.m).padStart(2, '0')}-${String(this.d).padStart(2, '0')}`
+                                                  : '';
+                                          },
+                                      }">
+                                <legend class="field-label mb-2 p-0">{{ __('Date of birth') }} <span class="font-normal text-ink-muted">({{ __('optional') }})</span></legend>
+                                <div class="grid grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)_minmax(0,1fr)] gap-2 sm:max-w-[28rem] sm:gap-2.5">
+                                    <label class="relative">
+                                        <span class="sr-only">{{ __('Day') }}</span>
+                                        <select x-model="d" @change="sync()" class="field-input mofa-select" @error('birthday') aria-invalid="true" @enderror>
+                                            <option value="">{{ __('Day') }}</option>
+                                            <template x-for="n in days()" :key="n"><option :value="String(n)" x-text="n" :selected="String(n) === d"></option></template>
+                                        </select>
+                                    </label>
+                                    <label class="relative">
+                                        <span class="sr-only">{{ __('Month') }}</span>
+                                        <select x-model="m" @change="sync()" class="field-input mofa-select" autocomplete="bday-month" @error('birthday') aria-invalid="true" @enderror>
+                                            <option value="">{{ __('Month') }}</option>
+                                            @foreach ($months as $n => $label)
+                                                <option value="{{ $n }}">{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+                                    <label class="relative">
+                                        <span class="sr-only">{{ __('Year') }}</span>
+                                        <select x-model="y" @change="sync()" class="field-input mofa-select" autocomplete="bday-year" @error('birthday') aria-invalid="true" @enderror>
+                                            <option value="">{{ __('Year') }}</option>
+                                            @foreach (range($thisYear - 10, 1930) as $year)
+                                                <option value="{{ $year }}">{{ $year }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+                                </div>
+                                @error('birthday')
+                                    <p id="birthday-error" class="field-error"><x-mofa.icon name="alert" :size="16" /> {{ $message }}</p>
+                                @else
+                                    <p class="field-hint m-0">{{ __('So we can treat you on your birthday.') }}</p>
+                                @enderror
+                            </fieldset>
                         @endif
 
                         {{-- ---------- Step 2: delivery ---------- --}}
@@ -213,6 +268,53 @@
                                     <textarea id="address" wire:model.blur="address" rows="2" dir="auto" autocomplete="street-address" placeholder="{{ __('Street, building, floor, apartment, landmark') }}" class="field-input" @error('address') aria-invalid="true" @enderror></textarea>
                                     @error('address') <p class="field-error"><x-mofa.icon name="alert" :size="16" /> {{ $message }}</p> @enderror
                                 </div>
+
+                                {{-- The door on the map (optional): the pin stays in the middle, the map moves under it. --}}
+                                @php($cartoKey = config('services.carto.key'))
+                                <div class="field" x-data="locationPicker($wire.entangle('lat'), $wire.entangle('lng'))" wire:ignore
+                                     data-tiles="{{ $cartoKey ? 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key='.urlencode($cartoKey) : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png' }}"
+                                     data-attribution="{{ $cartoKey ? '© OpenStreetMap · © CARTO' : '© OpenStreetMap' }}"
+                                     data-no-gps="{{ __('We couldn\'t get your location. Move the map to your door instead.') }}">
+                                    <div class="flex items-baseline justify-between gap-3">
+                                        <span class="field-label">{{ __('Your door on the map') }} <span class="font-normal text-ink-muted">({{ __('optional') }})</span></span>
+                                        <button type="button" x-show="pinned" x-cloak @click="clear()" class="text-sm text-ink-muted underline underline-offset-2 hover:text-brown">{{ __('Remove the pin') }}</button>
+                                    </div>
+
+                                    <div class="relative isolate overflow-hidden rounded-[1.125rem] border-[1.5px] bg-cream transition-colors"
+                                         :class="pinned ? 'border-brown' : 'border-brown/15'">
+                                        <div x-ref="map" dir="ltr" class="mofa-map h-64 sm:h-72" role="application" aria-label="{{ __('Map: move it so the pin sits on your door') }}"></div>
+
+                                        <div x-show="!ready" class="absolute inset-0 z-[600] flex items-center justify-center gap-2 bg-cream text-sm text-ink-muted">
+                                            <x-mofa.icon name="pin" :size="18" /> {{ __('Loading the map…') }}
+                                        </div>
+
+                                        {{-- The pin: brown drop, terracotta heart, lifts while the map moves. --}}
+                                        <div class="pointer-events-none absolute inset-0 z-[500] flex items-center justify-center" aria-hidden="true">
+                                            <span class="absolute h-1.5 w-4 rounded-[50%] bg-brown/30 blur-[1px] transition-all duration-200" :class="moving ? 'w-3 opacity-60' : ''"></span>
+                                            <svg class="mb-11 h-12 w-10 drop-shadow-[0_6px_8px_rgb(75_44_22/0.35)] transition-transform duration-200" :class="moving ? '-translate-y-2' : ''" viewBox="0 0 40 48">
+                                                <path d="M20 47C20 47 3 29.5 3 18.5C3 9 10.6 1.5 20 1.5S37 9 37 18.5C37 29.5 20 47 20 47Z" fill="#4b2c16" stroke="#f6ece1" stroke-width="2.5" />
+                                                <circle cx="20" cy="18.5" r="6.5" fill="#b2563d" />
+                                            </svg>
+                                        </div>
+
+                                        {{-- Status (physical sides: the map itself is always left-to-right). --}}
+                                        <div class="pointer-events-none absolute top-3 left-3 z-[500] flex items-center gap-1.5 rounded-pill bg-paper/95 px-3 py-1.5 text-xs font-medium text-brown shadow-sm backdrop-blur">
+                                            <span x-show="pinned" class="flex items-center gap-1.5"><x-mofa.icon name="check" :size="14" /> {{ __('Pinned') }}</span>
+                                            <span x-show="!pinned">{{ __('Move the map to your door') }}</span>
+                                        </div>
+
+                                        <button type="button" @click="locate()" :disabled="locating"
+                                                class="absolute bottom-3 left-3 z-[500] flex h-10 items-center gap-2 rounded-pill bg-brown px-4 text-sm font-medium text-paper shadow-md transition hover:bg-brown/90 disabled:opacity-70">
+                                            <svg x-show="locating" class="size-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".3" stroke-width="3" /><path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+                                            <x-mofa.icon x-show="!locating" name="pin" :size="16" />
+                                            {{ __('Use my location') }}
+                                        </button>
+                                    </div>
+
+                                    <p x-show="!error" class="field-hint m-0">{{ __('Helps the driver find you faster. The written address above is still needed.') }}</p>
+                                    <p x-show="error" x-cloak class="field-error" x-text="error"></p>
+                                </div>
+                                @error('lat') <p class="field-error"><x-mofa.icon name="alert" :size="16" /> {{ $message }}</p> @enderror
                             @elseif ($this->zone?->is_pickup)
                                 <p class="m-0 flex items-start gap-2 rounded-md bg-cream/50 p-4 text-sm"><x-mofa.icon name="pin" :size="20" class="shrink-0" /> {{ __('We will send you the pickup location with the confirmation.') }}</p>
                             @endif
@@ -238,7 +340,9 @@
                                         <dt class="text-sm text-ink-muted">{{ __('Your details') }}</dt>
                                         <dd class="m-0 font-semibold">{{ $name }}</dd>
                                         <dd class="m-0 text-sm rtl:text-end" dir="ltr">{{ $phone }}</dd>
-                                        <dd class="m-0 text-sm rtl:text-end" dir="ltr">{{ $email }}</dd>
+                                        @if (filled($email))
+                                            <dd class="m-0 text-sm rtl:text-end" dir="ltr">{{ $email }}</dd>
+                                        @endif
                                     </div>
                                     <button type="button" wire:click="goTo(1)" class="min-h-10 shrink-0 px-1 text-sm font-semibold underline underline-offset-4">{{ __('Edit') }}</button>
                                 </div>
@@ -247,7 +351,8 @@
                                     <div class="flex min-w-0 flex-1 flex-col gap-0.5">
                                         <dt class="text-sm text-ink-muted">{{ $this->zone?->is_pickup ? __('Pickup') : __('Delivery') }}</dt>
                                         <dd class="m-0 font-semibold">{{ $this->selectedDay?->date->locale($locale)->translatedFormat('l j F') }} · {{ $selectedSlot?->localized('label') }}</dd>
-                                        <dd class="m-0 text-sm">{{ $this->zone?->localized('name') }}@if ($this->zone && ! $this->zone->is_pickup && $address) · <span dir="auto">{{ $address }}</span>@endif</dd>
+                                        <dd class="m-0 text-sm">{{ $this->zone?->localized('name') }}@if ($this->zone && ! $this->zone->is_pickup && $address) · <span dir="auto">{{ $address }}</span>@endif
+                                            @if ($this->zone && ! $this->zone->is_pickup && $lat !== null)<span class="mt-0.5 flex items-center gap-1 text-xs text-ink-muted"><x-mofa.icon name="pin" :size="13" /> {{ __('Pinned on the map') }}</span>@endif</dd>
                                         @if ($notes)
                                             <dd class="m-0 text-sm text-ink-muted" dir="auto">{{ $notes }}</dd>
                                         @endif

@@ -19,10 +19,17 @@
     <div class="mofa-order-contact">
         <x-filament::button tag="a" :href="'tel:'.$customer->phone" color="gray" size="sm" icon="heroicon-m-phone">{{ __('Call') }}</x-filament::button>
         <x-filament::button tag="a" :href="'https://wa.me/2'.$customer->phone" target="_blank" color="gray" size="sm" icon="heroicon-m-chat-bubble-left-right">WhatsApp</x-filament::button>
-        <x-filament::button tag="a" :href="'mailto:'.$customer->email" color="gray" size="sm" icon="heroicon-m-envelope">{{ __('Email') }}</x-filament::button>
+        @if ($customer->email)
+            <x-filament::button tag="a" :href="'mailto:'.$customer->email" color="gray" size="sm" icon="heroicon-m-envelope">{{ __('Email') }}</x-filament::button>
+        @endif
     </div>
     <dl class="mofa-order-list">
         <div><dt>{{ __('Phone') }}</dt><dd dir="ltr" class="mofa-ltr">{{ $customer->phone }}</dd></div>
-        <div><dt>{{ __('Email') }}</dt><dd dir="ltr" class="mofa-ltr">{{ $customer->email }}</dd></div>
+        @if ($customer->email)
+            <div><dt>{{ __('Email') }}</dt><dd dir="ltr" class="mofa-ltr">{{ $customer->email }}</dd></div>
+        @endif
+        @if ($customer->birthday)
+            <div><dt>{{ __('Date of birth') }}</dt><dd>{{ $customer->birthday->locale(app()->getLocale())->translatedFormat('j F Y') }}@if ($customer->birthdaySoon()) · <span class="mofa-order-birthday">🎂 {{ __('Birthday this week') }}</span>@endif</dd></div>
+        @endif
     </dl>
 </div>

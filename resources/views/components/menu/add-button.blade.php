@@ -1,4 +1,4 @@
-@props(['item', 'size' => 'compact']) {{-- compact (menu cards) | large (item page) | bar (item page bottom bar) --}}
+@props(['item', 'size' => 'compact', 'inverse' => false]) {{-- compact (menu cards) | large (item page) | bar (item page bottom bar) --}}
 @if ($item->isOrderable())
     @php($name = $item->localized('name'))
     <div x-data="{ product: @js($item->cartPayload()) }" {{ $attributes->class('relative z-10') }}>
@@ -28,11 +28,11 @@
             </div>
         @else
             <button type="button" x-show="!$store.cart.qty(product.id)" x-on:click.prevent="$store.cart.add(product)"
-                    class="flex size-11 items-center justify-center rounded-pill bg-brown text-paper transition hover:-translate-y-px"
+                    @class(['flex size-11 items-center justify-center rounded-pill transition hover:-translate-y-px', 'bg-brown text-paper' => ! $inverse, 'bg-paper text-brown' => $inverse])
                     aria-label="{{ __('Add to order') }}: {{ $name }}">
                 <x-mofa.icon name="plus" :size="20" />
             </button>
-            <div x-cloak x-show="$store.cart.qty(product.id)" class="flex h-11 items-center rounded-pill bg-brown text-paper">
+            <div x-cloak x-show="$store.cart.qty(product.id)" @class(['flex h-11 items-center rounded-pill', 'bg-brown text-paper' => ! $inverse, 'bg-paper text-brown' => $inverse])>
                 <button type="button" class="flex size-11 items-center justify-center rounded-pill" x-on:click.prevent="$store.cart.dec(product.id)" aria-label="{{ __('One less') }}: {{ $name }}">
                     <x-mofa.icon name="minus" :size="18" />
                 </button>

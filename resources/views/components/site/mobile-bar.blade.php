@@ -8,7 +8,7 @@
     <button type="button" x-cloak x-show="!$store.cart.isEmpty" @click="$store.cart.open = true"
             class="btn btn-primary h-13 w-full justify-between px-5">
         <span class="flex items-center gap-2">
-            <span class="flex size-7 items-center justify-center rounded-pill bg-paper text-sm font-semibold text-brown" x-text="$store.cart.count"></span>
+            <span class="flex size-7 items-center justify-center rounded-pill bg-paper text-sm font-semibold text-brown" x-text="$store.cart.count" x-effect="$store.cart.bump && ($el.classList.remove('mofa-pop'), void $el.offsetWidth, $el.classList.add('mofa-pop'))"></span>
             {{ __('View your order') }}
         </span>
         <span class="font-semibold normal-case" x-text="$store.cart.money($store.cart.subtotal)"></span>

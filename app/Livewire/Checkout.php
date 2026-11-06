@@ -38,6 +38,9 @@ class Checkout extends Component
 
     public string $email = '';
 
+    /** Optional, Y-m-d from the date input. */
+    public string $birthday = '';
+
     public ?string $date = null;
 
     public ?int $slotId = null;
@@ -45,6 +48,11 @@ class Checkout extends Component
     public ?int $zoneId = null;
 
     public string $address = '';
+
+    /** The door pinned on the map (optional). */
+    public ?float $lat = null;
+
+    public ?float $lng = null;
 
     public string $notes = '';
 
@@ -180,13 +188,14 @@ class Checkout extends Component
         try {
             $order = $placer->place(
                 $this->cart,
-                ['name' => $this->name, 'phone' => $this->phone, 'email' => $this->email],
+                ['name' => $this->name, 'phone' => $this->phone, 'email' => $this->email, 'birthday' => $this->birthday ?: null],
                 $this->date,
                 $this->slotId,
                 $this->zoneId,
                 $this->address,
                 $this->notes,
                 app()->getLocale(),
+                $this->lat !== null && $this->lng !== null ? ['lat' => $this->lat, 'lng' => $this->lng] : null,
             );
         } catch (SlotUnavailable) {
             unset($this->days, $this->selectedDay);
@@ -212,7 +221,8 @@ class Checkout extends Component
                         $fail(__('Enter an Egyptian mobile number, like 01012345678.'));
                     }
                 }],
-                'email' => ['required', 'email', 'max:120'],
+                'email' => ['nullable', 'email', 'max:120'],
+                'birthday' => ['nullable', 'date_format:Y-m-d', 'before:today', 'after:1920-01-01'],
             ],
             2 => [
                 'date' => ['required', Rule::in($this->days->filter(fn (DeliveryDay $d) => $d->isAvailable())->map->key()->all())],
@@ -224,6 +234,9 @@ class Checkout extends Component
                 }],
                 'zoneId' => ['required', 'integer', Rule::in($this->zones->pluck('id')->all())],
                 'address' => [$this->zone && ! $this->zone->is_pickup ? 'required' : 'nullable', 'string', 'max:500'],
+                // Roughly Egypt, so a stray tap in the sea or abroad is caught.
+                'lat' => ['nullable', 'numeric', 'between:21,32', 'required_with:lng'],
+                'lng' => ['nullable', 'numeric', 'between:24,37', 'required_with:lat'],
                 'notes' => ['nullable', 'string', 'max:500'],
             ],
             default => [],
@@ -236,14 +249,16 @@ class Checkout extends Component
             'name.required' => __('Please enter your name.'),
             'name.min' => __('Please enter your name.'),
             'phone.required' => __('Please enter your phone number.'),
-            'email.required' => __('Please enter your email.'),
             'email.email' => __('This email doesn\'t look right.'),
+            'birthday.*' => __('Please choose a real date of birth.'),
             'date.required' => __('Please pick a day.'),
             'date.in' => __('Please pick an available day.'),
             'slotId.required' => __('Please pick a time.'),
             'zoneId.required' => __('Please pick your area.'),
             'zoneId.in' => __('Please pick your area.'),
             'address.required' => __('Please enter the address.'),
+            'lat.between' => __('This pin is outside the areas we deliver to. Move it to your door.'),
+            'lng.between' => __('This pin is outside the areas we deliver to. Move it to your door.'),
             '*.max' => __('This is too long.'),
         ];
     }

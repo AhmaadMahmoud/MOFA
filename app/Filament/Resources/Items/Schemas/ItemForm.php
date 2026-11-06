@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Items\Schemas;
 
 use App\Enums\ItemBadge;
 use App\Filament\Resources\Ingredients\IngredientResource;
+use App\Support\ItemNote;
 use App\Support\Money;
 use App\Support\Nutrition;
 use Filament\Forms\Components\FileUpload;
@@ -20,6 +21,7 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Text;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class ItemForm
 {
@@ -32,6 +34,7 @@ class ItemForm
                     Grid::make(1)->columnSpan(['lg' => 2])->schema([
                         static::textSection(),
                         static::photosSection(),
+                        static::notesSection(),
                         static::ingredientsSection(),
                     ]),
                     Grid::make(1)->columnSpan(['lg' => 1])->schema([
@@ -94,6 +97,43 @@ class ItemForm
                     ->panelLayout('grid')
                     ->imageEditor()
                     ->imageEditorAspectRatioOptions(['4:3', '1:1', null]),
+            ]);
+    }
+
+    /** Short styled notes shown under the photo on the item page. */
+    protected static function notesSection(): Section
+    {
+        return Section::make(__('Notes under the photo'))
+            ->description(__('Short notes like "Suitable for diabetics" or "Spicy", in the brand colours.'))
+            ->collapsible()
+            ->schema([
+                Repeater::make('notes')
+                    ->hiddenLabel()
+                    ->defaultItems(0)
+                    ->maxItems(4)
+                    ->reorderableWithDragAndDrop()
+                    ->addActionLabel(__('Add a note'))
+                    ->itemLabel(fn (array $state) => $state['text_en'] ?? $state['text_ar'] ?? null)
+                    ->collapsible()
+                    ->schema([
+                        TextInput::make('text_en')->label(__('Text (English)'))->maxLength(40)->placeholder('Suitable for diabetics')->live(onBlur: true)->extraInputAttributes(['dir' => 'ltr']),
+                        TextInput::make('text_ar')->label(__('Text (Arabic)'))->maxLength(40)->placeholder('مناسب لمرضى السكري')->live(onBlur: true)->extraInputAttributes(['dir' => 'rtl'])
+                            ->requiredWithout('text_en')->validationMessages(['required_without' => __('Write the note in at least one language.')]),
+                        Select::make('font')->label(__('Font'))->options(ItemNote::fontOptions())->default(ItemNote::DEFAULTS['font'])->selectablePlaceholder(false)->native(false)->live(),
+                        Select::make('shape')->label(__('Background shape'))->options(ItemNote::shapeOptions())->default(ItemNote::DEFAULTS['shape'])->selectablePlaceholder(false)->native(false)->live(),
+                        Select::make('color')->label(__('Text colour'))->options(ItemNote::colorOptions())->allowHtml()->default(ItemNote::DEFAULTS['color'])->selectablePlaceholder(false)->native(false)->live(),
+                        Select::make('background')->label(__('Background colour'))->options(ItemNote::colorOptions())->allowHtml()->default(ItemNote::DEFAULTS['background'])->selectablePlaceholder(false)->native(false)->live()
+                            ->hidden(fn (Get $get) => $get('shape') === 'none'),
+                        // How it will look on the site.
+                        Text::make(function (Get $get) {
+                            $note = ['text_en' => $get('text_en'), 'text_ar' => $get('text_ar'), 'font' => $get('font'), 'color' => $get('color'), 'background' => $get('background'), 'shape' => $get('shape')];
+                            $look = ItemNote::look($note);
+                            $text = e(ItemNote::text($note) ?: __('Your note'));
+
+                            return new HtmlString('<div class="mofa-note-preview"><span class="'.$look['class'].'" style="'.$look['style'].'">'.$text.'</span></div>');
+                        })->columnSpanFull(),
+                    ])
+                    ->columns(2),
             ]);
     }
 

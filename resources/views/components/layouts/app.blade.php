@@ -54,10 +54,12 @@
     @endif
     {{ $head ?? '' }}
 </head>
-<body @class(['min-h-dvh lg:pb-0', 'pb-[calc(5.5rem+env(safe-area-inset-bottom))]' => $mobileBar])>
+<body @class(['isolate min-h-dvh lg:pb-0', 'pb-[calc(5.5rem+env(safe-area-inset-bottom))]' => $mobileBar])>
     <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-50 focus:rounded-pill focus:bg-brown focus:px-4 focus:py-2 focus:text-paper">
         {{ __('Skip to content') }}
     </a>
+
+    <x-site.corners />
 
     <x-site.header :switch-url="$alternates[Locales::other()] ?? null" />
 
