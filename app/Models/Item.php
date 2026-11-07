@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
     'category_id', 'name_en', 'name_ar', 'slug', 'tagline_en', 'tagline_ar', 'description_en', 'description_ar',
-    'price', 'badge', 'serving_size_g', 'protein_g', 'carbs_g', 'fat_g', 'fiber_g', 'sugars_g',
+    'price', 'packaging_cost', 'badge', 'serving_size_g', 'protein_g', 'carbs_g', 'fat_g', 'fiber_g', 'sugars_g',
     'images', 'notes', 'is_featured', 'is_active', 'sort_order',
 ])]
 class Item extends Model
@@ -32,6 +32,7 @@ class Item extends Model
     {
         return [
             'price' => 'integer',
+            'packaging_cost' => 'integer',
             'badge' => ItemBadge::class,
             'images' => 'array',
             'notes' => 'array',

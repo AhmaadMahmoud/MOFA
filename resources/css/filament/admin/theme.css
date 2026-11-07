@@ -934,3 +934,18 @@
     color: var(--mofa-terracotta);
     font-weight: 600;
 }
+
+/* ---------- Item form: cost and profit ---------- */
+.mofa-cost { display: flex; flex-direction: column; gap: 0.875rem; font-size: 0.875rem; }
+.mofa-cost-empty { margin: 0; color: var(--gray-500); }
+.mofa-cost-lines { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.375rem; }
+.mofa-cost-lines li { display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem; }
+.mofa-cost-num { font-variant-numeric: tabular-nums; white-space: nowrap; direction: ltr; unicode-bidi: isolate; }
+.mofa-cost-problem { color: var(--warning-600); font-size: 0.8125rem; text-align: end; }
+.mofa-cost-totals { margin: 0; padding-top: 0.75rem; border-top: 1px dashed var(--gray-300); display: flex; flex-direction: column; gap: 0.375rem; }
+.mofa-cost-totals div { display: flex; justify-content: space-between; gap: 0.75rem; }
+.mofa-cost-totals dt { color: var(--gray-600); }
+.mofa-cost-totals dd { margin: 0; font-weight: 500; }
+.mofa-cost-profit dt, .mofa-cost-profit dd { color: var(--gray-950); font-weight: 600; font-size: 1rem; }
+.mofa-cost-margin { display: flex; flex-wrap: wrap; align-items: center; gap: 0.625rem; }
+.dark .mofa-cost-profit dt, .dark .mofa-cost-profit dd { color: white; }

@@ -7,7 +7,11 @@ use App\Models\Ingredient;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use App\Support\Costing;
+use App\Support\Money;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -43,6 +47,19 @@ class IngredientResource extends Resource
         return [
             TextInput::make('name_en')->label(__('Name (English)'))->required()->maxLength(255)->extraInputAttributes(['dir' => 'ltr'])->unique(Ingredient::class, 'name_en', ignoreRecord: true),
             TextInput::make('name_ar')->label(__('Name (Arabic)'))->required()->maxLength(255)->extraInputAttributes(['dir' => 'rtl']),
+            // What it costs to buy, e.g. 300 g for 150 EGP. Feeds the item cost (App\Support\Costing).
+            Fieldset::make(__('Purchase price'))
+                ->columns(3)
+                ->schema([
+                    TextInput::make('purchase_quantity')->label(__('Quantity bought'))->numeric()->minValue(0)->requiredWith('purchase_price'),
+                    Select::make('purchase_unit')->label(__('Unit'))
+                        ->options(collect(array_keys(Costing::PURCHASE_UNITS))->mapWithKeys(fn ($u) => [$u => __($u)]))
+                        ->requiredWith('purchase_quantity'),
+                    TextInput::make('purchase_price')->label(__('Price paid'))->numeric()->minValue(0)->step(0.5)->suffix('EGP')
+                        ->requiredWith('purchase_quantity')
+                        ->formatStateUsing(fn (?int $state) => Money::toPounds($state))
+                        ->dehydrateStateUsing(fn ($state) => Money::toPiasters($state)),
+                ]),
         ];
     }
 
@@ -58,6 +75,21 @@ class IngredientResource extends Resource
             ->columns([
                 TextColumn::make('name_en')->label(__('Name (English)'))->searchable()->sortable()->weight('semibold'),
                 TextColumn::make('name_ar')->label(__('Name (Arabic)'))->searchable(),
+                TextColumn::make('purchase_price')->label(__('Purchase price'))
+                    ->state(fn (Ingredient $record) => $record->purchaseLabel())
+                    ->placeholder(__('Not priced'))
+                    ->color(fn (Ingredient $record) => $record->purchaseLabel() ? null : 'warning'),
+                TextColumn::make('unit_cost')->label(__('Cost per 100 g / 100 ml / piece'))
+                    ->state(function (Ingredient $record) {
+                        [$base] = Costing::purchaseBase($record) ?? [null];
+                        if ($base === null) {
+                            return null;
+                        }
+                        $per = $base === 'pc' ? 1 : 100;
+
+                        return Costing::money(Costing::unitCost($record) * $per).' / '.$per.' '.__($base);
+                    })
+                    ->placeholder('—'),
                 TextColumn::make('items_count')->label(__('Used in'))->counts('items')->badge(),
             ])
             ->recordActions([

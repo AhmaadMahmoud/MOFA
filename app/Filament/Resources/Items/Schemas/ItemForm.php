@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Items\Schemas;
 
 use App\Enums\ItemBadge;
 use App\Filament\Resources\Ingredients\IngredientResource;
+use App\Models\Ingredient;
+use App\Support\Costing;
 use App\Support\ItemNote;
 use App\Support\Money;
 use App\Support\Nutrition;
@@ -39,6 +41,7 @@ class ItemForm
                     ]),
                     Grid::make(1)->columnSpan(['lg' => 1])->schema([
                         static::sellingSection(),
+                        static::costSection(),
                         static::nutritionSection(),
                     ]),
                 ]),
@@ -163,15 +166,18 @@ class ItemForm
                             ->preload()
                             ->required()
                             ->distinct()
+                            ->live()
                             ->createOptionForm(IngredientResource::formFields()),
                         TextInput::make('quantity')
                             ->label(__('Amount'))
                             ->numeric()
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->live(onBlur: true),
                         Select::make('unit')
                             ->label(__('Unit'))
-                            ->options(['g' => 'g', 'ml' => 'ml', 'pc' => __('pc')])
-                            ->placeholder('—'),
+                            ->options(['g' => __('g'), 'ml' => __('ml'), 'pc' => __('pc')])
+                            ->placeholder('—')
+                            ->live(),
                     ]),
             ]);
     }
@@ -196,6 +202,7 @@ class ItemForm
                     ->minValue(0)
                     ->step(0.5)
                     ->suffix('EGP')
+                    ->live(onBlur: true)
                     ->formatStateUsing(fn (?int $state) => Money::toPounds($state))
                     ->dehydrateStateUsing(fn ($state) => Money::toPiasters($state)),
                 Select::make('badge')
@@ -205,6 +212,45 @@ class ItemForm
                 Toggle::make('is_active')->label(__('Shown on the site'))->default(true),
                 Toggle::make('is_featured')->label(__('Featured on the home page')),
             ]);
+    }
+
+    /** What the item costs to make and what it earns, worked out live from the ingredient lines. */
+    protected static function costSection(): Section
+    {
+        return Section::make(__('Cost and profit'))
+            ->description(__('Shown only in the dashboard. Ingredient prices are set on the Ingredients page.'))
+            ->icon('heroicon-o-calculator')
+            ->schema([
+                TextInput::make('packaging_cost')
+                    ->label(__('Packaging and extras'))
+                    ->helperText(__('Box, bag, napkins and the like, per item.'))
+                    ->numeric()
+                    ->minValue(0)
+                    ->step(0.25)
+                    ->suffix('EGP')
+                    ->live(onBlur: true)
+                    ->formatStateUsing(fn (?int $state) => Money::toPounds($state))
+                    ->dehydrateStateUsing(fn ($state) => Money::toPiasters($state)),
+                Text::make(fn (Get $get) => static::costBreakdown($get)),
+            ]);
+    }
+
+    protected static function costBreakdown(Get $get): HtmlString
+    {
+        $rows = collect($get('ingredientLines') ?? [])->filter(fn ($row) => filled($row['ingredient_id'] ?? null));
+        $ingredients = Ingredient::query()->findMany($rows->pluck('ingredient_id'))->keyBy('id');
+
+        $summary = Costing::summary(
+            $rows->map(fn ($row) => [
+                'ingredient' => $ingredients->get($row['ingredient_id']),
+                'quantity' => $row['quantity'] ?? null,
+                'unit' => $row['unit'] ?? null,
+            ]),
+            Money::toPiasters($get('packaging_cost')),
+            Money::toPiasters($get('price')),
+        );
+
+        return new HtmlString(view('filament.items.cost-breakdown', ['summary' => $summary])->render());
     }
 
     protected static function nutritionSection(): Section
