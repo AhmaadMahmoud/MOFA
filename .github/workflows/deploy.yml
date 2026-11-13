@@ -1,7 +1,8 @@
 name: Deploy to Hostinger
 
-# Every push to main builds the site and uploads only the changed files over FTP,
-# then calls public_html/_deploy.php to run migrations and rebuild the caches.
+# Every push to main builds the site, uploads it as ONE zip over FTP (few connections, so
+# Hostinger's FTP has little chance to drop it), then calls public_html/_deploy.php, which
+# unpacks the zip over mofa/ and public_html/, runs migrations and rebuilds the caches.
 on:
   push:
     branches: [main]
@@ -14,10 +15,9 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 350  # the very first upload sends every file; later runs only send changes
+    timeout-minutes: 30
     env:
-      APP_DIR: ${{ vars.FTP_APP_DIR || 'domains/mofasando.store/mofa/' }}
-      WEB_DIR: ${{ vars.FTP_WEB_DIR || 'domains/mofasando.store/public_html/' }}
+      FTP_DIR: ${{ vars.FTP_DIR || 'domains/mofasando.store' }}
       SITE_URL: ${{ vars.SITE_URL || 'https://mofasando.store' }}
     steps:
       - uses: actions/checkout@v4
@@ -42,44 +42,39 @@ jobs:
           npm ci --no-audit --no-fund
           npm run build
 
-      - name: Assemble mofa/ and public_html/
+      - name: Assemble and zip mofa/ + public_html/
         env:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
         run: |
           test -n "$DEPLOY_KEY" || { echo "DEPLOY_KEY secret is missing"; exit 1; }
           export DEPLOY_KEY_HASH="$(printf %s "$DEPLOY_KEY" | sha256sum | cut -d' ' -f1)"
           bash deploy/assemble.sh "$RUNNER_TEMP/out"
+          (cd "$RUNNER_TEMP/out" && zip -qry "$RUNNER_TEMP/mofa-release.zip" mofa public_html)
+          ls -lh "$RUNNER_TEMP/mofa-release.zip"
 
-      - name: Upload app (mofa/)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ${{ runner.temp }}/out/mofa/
-          server-dir: ${{ env.APP_DIR }}
-          # Never touch what lives only on the server: .env, uploads, logs, caches
-          exclude: |
-            **/.git*
-            **/.git*/**
-            .env
-            storage/**
-            bootstrap/cache/**
+      - name: Upload over FTP
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          set -euo pipefail
+          printf 'machine %s login %s password %s\n' "$FTP_SERVER" "$FTP_USERNAME" "$FTP_PASSWORD" > "$RUNNER_TEMP/netrc"
+          chmod 600 "$RUNNER_TEMP/netrc"
+          upload() { # $1 local file, $2 remote path; FTPS first, plain FTP as a fallback
+            local url="ftp://$FTP_SERVER/$2"
+            curl -sS --netrc-file "$RUNNER_TEMP/netrc" --ssl-reqd --insecure --ftp-pasv \
+                 --retry 5 --retry-all-errors --retry-delay 10 --connect-timeout 30 -T "$1" "$url" \
+            || { echo "FTPS failed, trying plain FTP"; \
+                 curl -sS --netrc-file "$RUNNER_TEMP/netrc" --ftp-pasv \
+                 --retry 5 --retry-all-errors --retry-delay 10 --connect-timeout 30 -T "$1" "$url"; }
+          }
+          upload "$RUNNER_TEMP/mofa-release.zip" "$FTP_DIR/mofa-release.zip"
+          upload "$RUNNER_TEMP/out/public_html/_deploy.php" "$FTP_DIR/public_html/_deploy.php"
+          rm -f "$RUNNER_TEMP/netrc"
 
-      - name: Upload web root (public_html/)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ${{ runner.temp }}/out/public_html/
-          server-dir: ${{ env.WEB_DIR }}
-          exclude: |
-            storage
-            storage/**
-
-      - name: Migrate and rebuild caches
+      - name: Unpack, migrate and rebuild caches
         env:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
         run: |
-          curl -fsS --max-time 300 -X POST -H "X-Deploy-Key: $DEPLOY_KEY" "$SITE_URL/_deploy.php"
+          curl -fsS --max-time 600 -X POST -H "X-Deploy-Key: $DEPLOY_KEY" "$SITE_URL/_deploy.php"

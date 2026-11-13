@@ -50,14 +50,6 @@ PHP
 perl -0pi -e 's/\}\)->create\(\);\s*$/})->create()->usePublicPath(dirname(__DIR__, 2).\x27\/public_html\x27);\n/' "$APP/bootstrap/app.php"
 grep -q usePublicPath "$APP/bootstrap/app.php" || { echo "could not patch bootstrap/app.php" >&2; exit 1; }
 
-# Keep the FTP sync state file private
-cat >> "$WEB/.htaccess" <<'HT'
-
-<Files ".ftp-deploy-sync-state.json">
-    Require all denied
-</Files>
-HT
-
 # Post-deploy hook (migrate + rebuild caches), guarded by the deploy key
 if [ -n "${DEPLOY_KEY_HASH:-}" ]; then
     sed "s/__KEY_HASH__/${DEPLOY_KEY_HASH}/" "$ROOT/deploy/hook.php" > "$WEB/_deploy.php"
