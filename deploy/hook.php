@@ -1,6 +1,11 @@
 <?php
-// Called by the GitHub deploy workflow after it uploads mofa-release.zip next to public_html:
-// unpacks it over mofa/ and public_html/, then runs migrations and rebuilds Laravel's caches.
+// The deploy endpoint, called by the GitHub workflow over HTTPS (no FTP needed):
+//
+//   POST _deploy.php?action=upload&part=N&offset=B   body = one piece of mofa-release.zip, written at byte B
+//                                           (part 0 starts a new file; a retried piece just overwrites itself)
+//   POST _deploy.php?action=deploy&sha256=… checks the uploaded zip, unpacks it over mofa/ and public_html/,
+//                                           then runs migrations and rebuilds Laravel's caches.
+//
 // .env, storage/ and public_html/storage are never in the zip, so they are left alone.
 // Only answers a POST carrying the right X-Deploy-Key header (its SHA-256 is baked in at build time).
 if ($_SERVER['REQUEST_METHOD'] !== 'POST'
@@ -14,6 +19,7 @@ header('Content-Type: text/plain; charset=utf-8');
 
 $root = dirname(__DIR__);           // domains/mofasando.store
 $base = $root.'/mofa';
+$partial = $root.'/mofa-release.zip.part';
 $zipPath = $root.'/mofa-release.zip';
 
 function fail(string $message): never
@@ -22,7 +28,43 @@ function fail(string $message): never
     exit("DEPLOY FAILED: $message\n");
 }
 
-// 1. Unpack the release
+$action = $_GET['action'] ?? 'deploy';
+
+// 0. Receive the zip in pieces (small requests stay under the host's upload limits)
+if ($action === 'upload') {
+    $part = (int) ($_GET['part'] ?? -1);
+    $offset = (int) ($_GET['offset'] ?? -1);
+    if ($part < 0 || $offset < 0) {
+        fail('missing part number or offset');
+    }
+    $in = fopen('php://input', 'rb');
+    $out = fopen($partial, $part === 0 ? 'wb' : 'c+b');
+    if (! $in || ! $out || fseek($out, $offset) !== 0) {
+        fail('cannot write the upload');
+    }
+    $bytes = stream_copy_to_stream($in, $out);
+    fclose($in);
+    fclose($out);
+    if (! $bytes) {
+        fail("part $part arrived empty");
+    }
+    clearstatcache();
+    exit("part $part: $bytes bytes, ".filesize($partial)." so far\n");
+}
+
+if ($action !== 'deploy') {
+    fail('unknown action');
+}
+
+// 1. Check the upload is complete, then unpack it
+if (is_file($partial)) {
+    $expected = strtolower($_GET['sha256'] ?? '');
+    if ($expected === '' || ! hash_equals($expected, hash_file('sha256', $partial))) {
+        @unlink($partial);
+        fail('the uploaded zip does not match its checksum; nothing was changed');
+    }
+    rename($partial, $zipPath);
+}
 if (! is_file($zipPath)) {
     fail('mofa-release.zip not found');
 }
