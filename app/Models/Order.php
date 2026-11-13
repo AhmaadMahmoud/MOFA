@@ -35,6 +35,7 @@ class Order extends Model
             'expires_at' => 'datetime',
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
+            'stock_taken' => 'array',
         ];
     }
 

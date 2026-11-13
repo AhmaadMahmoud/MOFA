@@ -7,6 +7,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\User;
 use App\Notifications\Customer\OrderConfirmed;
+use App\Support\Stock;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -19,6 +20,8 @@ use LogicException;
  * The customer sends the InstaPay receipt on WhatsApp; Faten checks it and confirms here.
  * Nothing is cancelled automatically: an unpaid order waits until Faten confirms or cancels it.
  * (Old orders may still be "expired" from before; they can be confirmed too.)
+ *
+ * Confirming takes the order's ingredients out of stock; cancelling puts back what it took (App\Support\Stock).
  */
 final class OrderWorkflow
 {
@@ -33,6 +36,7 @@ final class OrderWorkflow
                 'reviewed_at' => now(),
             ]);
             $order->update(['status' => OrderStatus::Confirmed, 'confirmed_at' => now()]);
+            Stock::takeFor($order);
         });
 
         // The only email the customer gets: their order is confirmed (the email is optional at checkout).
@@ -59,11 +63,14 @@ final class OrderWorkflow
             throw new LogicException('Only open orders can be cancelled.');
         }
 
-        $order->update([
-            'status' => OrderStatus::Cancelled,
-            'cancelled_at' => now(),
-            'cancel_reason' => filled($reason) ? $reason : null,
-        ]);
+        DB::transaction(function () use ($order, $reason) {
+            $order->update([
+                'status' => OrderStatus::Cancelled,
+                'cancelled_at' => now(),
+                'cancel_reason' => filled($reason) ? $reason : null,
+            ]);
+            Stock::returnFor($order);
+        });
     }
 
     private function guard(Order $order, array $allowed): void

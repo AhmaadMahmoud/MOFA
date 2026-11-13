@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Filament\Resources\Items\ItemResource;
 use App\Filament\Widgets\ItemsNeedingAttention;
+use App\Filament\Widgets\LowStock;
 use App\Filament\Widgets\MenuOverview;
 use App\Filament\Widgets\OrdersOverview;
 use App\Filament\Widgets\PaymentsToConfirm;
@@ -12,7 +13,7 @@ use Filament\Pages\Dashboard as BaseDashboard;
 use Filament\Support\Icons\Heroicon;
 
 /**
- * Faten's home in the dashboard: a greeting, tomorrow's orders, payments to confirm, the menu at a glance, and what to fix next.
+ * Faten's home in the dashboard: a greeting, tomorrow's orders, payments to confirm, ingredients running low, the menu at a glance, and what to fix next.
  */
 class Dashboard extends BaseDashboard
 {
@@ -59,6 +60,7 @@ class Dashboard extends BaseDashboard
         return [
             OrdersOverview::class,
             PaymentsToConfirm::class,
+            LowStock::class,
             MenuOverview::class,
             ItemsNeedingAttention::class,
         ];

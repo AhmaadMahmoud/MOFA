@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Enums\OrderStatus;
 use App\Filament\Resources\Orders\OrderResource;
+use App\Models\Ingredient;
 use App\Models\Order;
 use App\Ordering\OrderWorkflow;
 use App\Support\Money;
@@ -76,7 +77,8 @@ class ViewOrder extends ViewRecord
                 ->visible(fn () => in_array($this->record->status, [OrderStatus::PaymentReview, OrderStatus::PendingPayment, OrderStatus::Expired], true))
                 ->requiresConfirmation()
                 ->modalHeading(__('Confirm the payment?'))
-                ->modalDescription(fn () => __('Check the receipt the customer sent on WhatsApp, and that :amount arrived on InstaPay. The customer gets an email that the order is confirmed.', ['amount' => Money::format($this->record->total)]))
+                ->modalDescription(fn () => __('Check the receipt the customer sent on WhatsApp, and that :amount arrived on InstaPay. The customer gets an email that the order is confirmed.', ['amount' => Money::format($this->record->total)])
+                    .(Ingredient::query()->whereNotNull('stock_quantity')->exists() ? ' '.__('Its ingredients come out of stock.') : ''))
                 ->action(function () use ($workflow) {
                     $workflow->confirmPayment($this->record, auth()->user());
                     Notification::make()->success()->title(__('Order confirmed'))->send();
@@ -110,7 +112,8 @@ class ViewOrder extends ViewRecord
                         Textarea::make('reason')->label(__('Reason (sent to the customer)'))->maxLength(255),
                     ])
                     ->modalHeading(__('Cancel this order?'))
-                    ->modalDescription(__('If the customer already paid, refund them on InstaPay.'))
+                    ->modalDescription(fn () => __('If the customer already paid, refund them on InstaPay.')
+                        .($this->record->stock_taken ? ' '.__('Its ingredients go back into stock.') : ''))
                     ->modalSubmitActionLabel(__('Cancel order'))
                     ->action(function (array $data) use ($workflow) {
                         $workflow->cancel($this->record, $data['reason'] ?? null);
