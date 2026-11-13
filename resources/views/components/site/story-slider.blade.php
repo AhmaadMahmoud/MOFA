@@ -50,7 +50,9 @@
          @mouseenter="hovering = true" @mouseleave="hovering = false"
          @focusin="hovering = true" @focusout="hovering = false"
          @touchstart.passive="touchStart($event)" @touchend="touchEnd($event)">
-        <div class="mofa-grain relative isolate grid overflow-hidden rounded-[1.75rem] [grid-template-areas:'stack']">
+        {{-- clip-path as well as overflow-hidden: iOS Safari doesn't clip the fading slides to rounded corners otherwise --}}
+        <div class="mofa-grain relative isolate grid overflow-hidden rounded-[1.75rem] [grid-template-areas:'stack']"
+             style="clip-path: inset(0 round 1.75rem); -webkit-clip-path: inset(0 round 1.75rem);">
 
             {{-- ===== 1. Three choices, twenty a day ===== --}}
             <article class="story-slide bg-[#f3e6d6]" :class="active === 0 && 'is-active'" :inert="active !== 0"

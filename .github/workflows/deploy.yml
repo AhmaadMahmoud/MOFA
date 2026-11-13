@@ -1,0 +1,85 @@
+name: Deploy to Hostinger
+
+# Every push to main builds the site and uploads only the changed files over FTP,
+# then calls public_html/_deploy.php to run migrations and rebuild the caches.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350  # the very first upload sends every file; later runs only send changes
+    env:
+      APP_DIR: ${{ vars.FTP_APP_DIR || 'domains/mofasando.store/mofa/' }}
+      WEB_DIR: ${{ vars.FTP_WEB_DIR || 'domains/mofasando.store/public_html/' }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://mofasando.store' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: intl, gd, zip, bcmath, mbstring, pdo_mysql
+          tools: composer:v2
+          coverage: none
+
+      - name: Composer install (no dev)
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Build front-end
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+
+      - name: Assemble mofa/ and public_html/
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          test -n "$DEPLOY_KEY" || { echo "DEPLOY_KEY secret is missing"; exit 1; }
+          export DEPLOY_KEY_HASH="$(printf %s "$DEPLOY_KEY" | sha256sum | cut -d' ' -f1)"
+          bash deploy/assemble.sh "$RUNNER_TEMP/out"
+
+      - name: Upload app (mofa/)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ runner.temp }}/out/mofa/
+          server-dir: ${{ env.APP_DIR }}
+          # Never touch what lives only on the server: .env, uploads, logs, caches
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .env
+            storage/**
+            bootstrap/cache/**
+
+      - name: Upload web root (public_html/)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ runner.temp }}/out/public_html/
+          server-dir: ${{ env.WEB_DIR }}
+          exclude: |
+            storage
+            storage/**
+
+      - name: Migrate and rebuild caches
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        run: |
+          curl -fsS --max-time 300 -X POST -H "X-Deploy-Key: $DEPLOY_KEY" "$SITE_URL/_deploy.php"
