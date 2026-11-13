@@ -80,8 +80,9 @@ $zip->close();
 @unlink($zipPath);
 echo "unpacked $count entries\n";
 
-// 2. Drop caches built from the old code, so the new config/routes are read
-foreach (glob($base.'/bootstrap/cache/*.php') ?: [] as $file) {
+// 2. Drop caches built from the old code, so the new config/routes are read —
+//    including Filament's list of dashboard pages, or a new page would stay hidden.
+foreach ([...(glob($base.'/bootstrap/cache/*.php') ?: []), ...(glob($base.'/bootstrap/cache/filament/panels/*.php') ?: [])] as $file) {
     @unlink($file);
 }
 if (function_exists('opcache_reset')) {
