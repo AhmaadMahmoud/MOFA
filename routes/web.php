@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnalyticsEventController;
 use App\Http\Controllers\MenuController;
 use App\Models\Order;
 use App\Support\Locales;
@@ -12,7 +13,7 @@ Route::get('/', fn (Request $request) => redirect()->route('home', ['locale' => 
 
 Route::prefix('{locale}')
     ->where(['locale' => implode('|', Locales::supported())])
-    ->middleware('locale')
+    ->middleware(['locale', 'track'])
     ->group(function () {
         // Home shows the categories; each opens the menu on that category.
         Route::get('/', fn () => view('pages.home', [
@@ -33,6 +34,9 @@ Route::prefix('{locale}')
             ->middleware('signed')
             ->name('orders.show');
     });
+
+// Analytics: "added to the bag", sent by the browser (resources/js/analytics.js).
+Route::post('/t', AnalyticsEventController::class)->middleware('throttle:120,1')->name('analytics.event');
 
 // Local only: see each customer email in the browser, for the latest order.
 //   /_mail/confirmed?locale=ar

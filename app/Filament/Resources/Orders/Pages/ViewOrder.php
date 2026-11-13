@@ -60,6 +60,12 @@ class ViewOrder extends ViewRecord
                     Section::make(fn (Order $record) => $record->is_pickup ? __('Pickup') : __('Delivery'))
                         ->icon(Heroicon::OutlinedMapPin)
                         ->schema([$view('delivery')]),
+                    // The visit that placed it (Visitors analytics): where the customer came from and what they looked at.
+                    Section::make(__('Path on the site'))
+                        ->icon(Heroicon::OutlinedMap)
+                        ->collapsible()->collapsed()
+                        ->visible(fn (Order $record) => $record->visit !== null)
+                        ->schema([$view('journey')]),
                 ]),
             ]),
         ]);
