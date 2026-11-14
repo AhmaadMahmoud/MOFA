@@ -2,8 +2,6 @@
  * The cart lives in the browser (localStorage), so it survives reloads and needs no account.
  * It keeps a display copy of each item; the server re-prices everything at checkout.
  */
-import { track } from './analytics';
-
 const KEY = 'mofa_cart_v1';
 const MAX_QTY = 20;
 
@@ -98,7 +96,6 @@ export const cartStore = {
         this.save();
         this.flash(product);
         this.celebrate();
-        track('add_to_cart', { item: product.id, qty });
     },
     celebrate() {
         this.bump++;

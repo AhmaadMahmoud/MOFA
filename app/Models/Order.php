@@ -64,12 +64,6 @@ class Order extends Model
         return $this->belongsTo(DeliveryZone::class, 'delivery_zone_id');
     }
 
-    /** The site visit that placed this order (analytics, see App\Analytics\Tracker). */
-    public function visit(): HasOne
-    {
-        return $this->hasOne(Visit::class)->latestOfMany('started_at');
-    }
-
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class)->latest('id');

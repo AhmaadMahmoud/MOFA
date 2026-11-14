@@ -2,7 +2,6 @@
 
 namespace App\Livewire;
 
-use App\Analytics\Tracker;
 use App\Delivery\DeliveryDay;
 use App\Delivery\DeliveryScheduler;
 use App\Models\Customer;
@@ -206,9 +205,6 @@ class Checkout extends Component
 
             return null;
         }
-
-        // Analytics: link this visit to the order (never blocks the order).
-        rescue(fn () => app(Tracker::class)->orderPlaced(request(), $order), report: true);
 
         $this->dispatch('order-placed');
 

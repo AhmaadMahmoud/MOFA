@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Middleware\SetLocale;
-use App\Http\Middleware\TrackVisit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,11 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'locale' => SetLocale::class,
-            'track' => TrackVisit::class,
         ]);
-
-        // Analytics beacons (POST /t) come from cached pages and carry nothing worth forging.
-        $middleware->preventRequestForgery(except: ['t']);
 
         // The locale cookie only stores "ar" or "en"; leave it readable.
         $middleware->encryptCookies(except: ['mofa_locale']);

@@ -73,12 +73,34 @@ if ($zip->open($zipPath) !== true) {
     fail('cannot open mofa-release.zip');
 }
 $count = $zip->numFiles;
+$shipped = [];
+for ($i = 0; $i < $count; $i++) {
+    $shipped[rtrim($zip->getNameIndex($i), '/')] = true;
+}
 if (! $zip->extractTo($root)) {
     fail('extract failed');
 }
 $zip->close();
 @unlink($zipPath);
 echo "unpacked $count entries\n";
+
+// 1b. Files deleted from the project must go from the server too: unpacking only adds and
+//     overwrites, so an old page or class would linger and still be loaded.
+$removed = 0;
+foreach (['app', 'config', 'database', 'lang', 'resources', 'routes'] as $dir) {
+    if (! is_dir("$base/$dir") || ! isset($shipped["mofa/$dir"])) {
+        continue; // never sweep a folder this zip did not bring
+    }
+    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator("$base/$dir", FilesystemIterator::SKIP_DOTS));
+    foreach ($files as $file) {
+        $relative = 'mofa/'.substr($file->getPathname(), strlen($base) + 1);
+        if ($file->isFile() && ! isset($shipped[$relative]) && @unlink($file->getPathname())) {
+            echo "removed $relative\n";
+            $removed++;
+        }
+    }
+}
+echo "removed $removed old files\n";
 
 // 2. Drop caches built from the old code, so the new config/routes are read —
 //    including Filament's list of dashboard pages, or a new page would stay hidden.
